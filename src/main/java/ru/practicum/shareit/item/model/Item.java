@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.Data;
+import ru.practicum.shareit.request.ItemRequest;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
@@ -14,5 +15,5 @@ public class Item {
     private String description;
     private boolean available;
     private int owner;
-    private String request;
+    private ItemRequest request;
 }
