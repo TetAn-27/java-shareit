@@ -2,13 +2,13 @@ package ru.practicum.shareit.booking;
 
 import lombok.Data;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 public class Booking {
     private int id;
-    private LocalDate start;
-    private LocalDate end;
+    private LocalDateTime start;
+    private LocalDateTime end;
     private int item;
     private int booker;
     private Status status;
