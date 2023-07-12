@@ -13,6 +13,6 @@ public class Item {
     @Size(max = 200, message = "Описание фильма превышает 200 символов")
     private String description;
     private boolean available;
-    private String owner;
+    private int owner;
     private String request;
 }
