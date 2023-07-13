@@ -25,7 +25,8 @@ public class UserRepositoryImpl implements UserRepository{
                 ));
             }
         }
-        user.setId(getId());
+        ++id;
+        user.setId(id);
         users.put(user.getId(), user);
     }
 
@@ -49,9 +50,9 @@ public class UserRepositoryImpl implements UserRepository{
         return users.get(id);
     }
 
-    private int getId() {
+    /*private int getId() {
         return ++id;
-    }
+    }*/
 
     public void validationId(Integer id) {
         if (!users.containsKey(id)) {
