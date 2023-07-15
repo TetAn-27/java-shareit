@@ -49,10 +49,19 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> getAllUserItems(int userId) {
-        List<ItemDto> userItemDto = new ArrayList<>();
-        for (Item userItem : itemRepository.getAllUserItems(userId)) {
-            userItemDto.add(ItemMapper.toItemDto(userItem));
+        return toListItemDto(itemRepository.getAllUserItems(userId));
+    }
+
+    @Override
+    public List<ItemDto> searchForItems(String text) {
+        return toListItemDto(itemRepository.searchForItems(text));
+    }
+
+    private List<ItemDto> toListItemDto(List<Item> itemList) {
+        List<ItemDto> itemDtoList = new ArrayList<>();
+        for (Item item : itemList) {
+            itemDtoList.add(ItemMapper.toItemDto(item));
         }
-        return userItemDto;
+        return itemDtoList;
     }
 }

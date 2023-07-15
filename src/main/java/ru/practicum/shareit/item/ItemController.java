@@ -1,13 +1,8 @@
 package ru.practicum.shareit.item;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.user.User;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -15,7 +10,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/items")
-@Slf4j
 public class ItemController {
     private final ItemService itemService;
 
@@ -24,7 +18,7 @@ public class ItemController {
     }
 
     @PostMapping()
-    public Optional<ItemDto> create(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public Optional<ItemDto> createItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                        @Valid @RequestBody ItemDto itemDto) {
         return itemService.create(userId, itemDto);
     }
@@ -44,5 +38,10 @@ public class ItemController {
     @GetMapping()
     public List<ItemDto> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemService.getAllUserItems(userId);
+    }
+
+    @GetMapping("/items/search")
+    public List<ItemDto> searchForItems(@RequestParam(value = "text") String text) {
+        return itemService.searchForItems(text);
     }
 }

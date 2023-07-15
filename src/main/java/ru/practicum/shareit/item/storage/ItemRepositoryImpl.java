@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.storage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.ArrayList;
@@ -54,5 +53,18 @@ public class ItemRepositoryImpl implements ItemRepository {
             }
         }
         return userItems;
+    }
+
+    @Override
+    public List<Item> searchForItems(String text) {
+        List<Item> listOfFoundItems = new ArrayList<>();
+        for (Item item : items.values()) {
+            boolean isContainsInDescriptions = item.getDescription().contains(text);
+            boolean isContainsInName = item.getName().contains(text);
+            if (item.isAvailable() && (isContainsInDescriptions || isContainsInName)) {
+                listOfFoundItems.add(item);
+            }
+        }
+        return listOfFoundItems;
     }
 }
