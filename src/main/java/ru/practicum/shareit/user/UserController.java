@@ -1,17 +1,18 @@
 package ru.practicum.shareit.user;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/users")
-@Slf4j
 public class UserController {
     private final UserService userService;
 
@@ -20,32 +21,27 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User getUserById(@PathVariable("userId") Integer id) {
+    public Optional<UserDto> getUserById(@PathVariable("userId") Integer id) {
         return userService.getUserById(id);
     }
 
     @GetMapping
-    public Collection<User> findAll() {
+    public List<UserDto> findAll() {
         return userService.findAll();
     }
 
     @PostMapping
-    public ResponseEntity<User> create(@Valid @RequestBody User user) {
-        return new ResponseEntity<>(userService.create(user), HttpStatus.OK);
+    public Optional<UserDto> create(@Valid @RequestBody UserDto userDto) {
+        return userService.create(userDto);
     }
 
     @PutMapping
-    public ResponseEntity<User> update(@Valid @RequestBody User user) {
-        User updatedUser = userService.update(user);
-        if (updatedUser == null) {
-            return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(user, HttpStatus.OK);
+    public Optional<UserDto> update(@Valid @RequestBody UserDto userDto) {
+        return userService.update(userDto);
     }
 
     @DeleteMapping("/{userId}")
     public void deleteUser(@PathVariable("userId") Integer userId) {
-        log.info("Received request to delete user with id={}", userId);
         userService.deleteUser(userId);
     }
 }

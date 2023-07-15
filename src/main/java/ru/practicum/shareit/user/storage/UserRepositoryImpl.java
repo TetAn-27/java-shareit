@@ -2,6 +2,7 @@ package ru.practicum.shareit.user.storage;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UserEmailException;
 import ru.practicum.shareit.exception.UserIdException;
 import ru.practicum.shareit.user.User;
@@ -15,8 +16,8 @@ public class UserRepositoryImpl implements UserRepository{
     private int id = 0;
 
     @Override
-    public Collection<User> getUsers() {
-        return users.values();
+    public List<User> getUsers() {
+        return new ArrayList<>(users.values());
     }
 
     @Override
@@ -35,16 +36,19 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public boolean updateUser(User user) {
+    public User updateUser(User user) {
         if (users.containsKey(user.getId())) {
             users.put(user.getId(), user);
-            return true;
+            log.info("Пользователь {} был обновлен", user.getName());
+            return user;
+        } else {
+            throw new NotFoundException("Пользовавтель с таким ID не был найден");
         }
-        return false;
     }
 
     @Override
     public void deleteUser(Integer userId) {
+        log.info("Пользователь с ID {} был удален", userId);
         users.remove(userId);
     }
 
