@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/items")
@@ -22,15 +23,15 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<ItemDto> create(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public Optional<ItemDto> create(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                        @Valid @RequestBody ItemDto item) {
-        return new ResponseEntity<>(itemService.create(userId, item), HttpStatus.OK);
+        return itemService.create(userId, item);
     }
 
     @PatchMapping("/{itemId}")
-    public ResponseEntity<Item> updateItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                              @PathVariable("itemId") Integer itemId,
-                                              @Valid @RequestBody Item item) {
+    public Optional<ItemDto> updateItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                     @PathVariable("itemId") Integer itemId,
+                                     @Valid @RequestBody Item item) {
        return itemService.update(userId, item);
     }
 }
