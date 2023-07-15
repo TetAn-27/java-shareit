@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -22,7 +23,7 @@ public class ItemController {
         this.itemService = itemService;
     }
 
-    @PostMapping
+    @PostMapping()
     public Optional<ItemDto> create(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                        @Valid @RequestBody ItemDto itemDto) {
         return itemService.create(userId, itemDto);
@@ -38,5 +39,10 @@ public class ItemController {
     @GetMapping("/{itemId}")
     public Optional<ItemDto> getItemById(@PathVariable("itemId") Integer itemId) {
         return itemService.getItemById(itemId);
+    }
+
+    @GetMapping()
+    public List<ItemDto> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+        return itemService.getAllUserItems(userId);
     }
 }

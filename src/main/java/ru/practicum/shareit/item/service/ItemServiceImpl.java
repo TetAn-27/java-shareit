@@ -6,8 +6,11 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UserItemException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -42,5 +45,14 @@ public class ItemServiceImpl implements ItemService {
             log.error("Предмет с ID {} не был найден", itemId);
             throw new NotFoundException("Предмет с таким ID не был найден");
         }
+    }
+
+    @Override
+    public List<ItemDto> getAllUserItems(int userId) {
+        List<ItemDto> userItemDto = new ArrayList<>();
+        for (Item userItem : itemRepository.getAllUserItems(userId)) {
+            userItemDto.add(ItemMapper.toItemDto(userItem));
+        }
+        return userItemDto;
     }
 }

@@ -3,9 +3,12 @@ package ru.practicum.shareit.item.storage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -40,5 +43,16 @@ public class ItemRepositoryImpl implements ItemRepository {
         } else {
             throw new NotFoundException("Предмет с таким ID не был найден");
         }
+    }
+
+    @Override
+    public List<Item> getAllUserItems(int userId) {
+        List<Item> userItems = new ArrayList<>();
+        for (Item item : items.values()) {
+            if (item.getOwner()==userId) {
+                userItems.add(item);
+            }
+        }
+        return userItems;
     }
 }
