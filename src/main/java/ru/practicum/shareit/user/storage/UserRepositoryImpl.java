@@ -21,24 +21,19 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     @Override
-    public void createUser(User user) {
-        for (User u : getUsers()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                throw new UserEmailException(String.format(
-                        "Пользователь с электронной почтой %s уже зарегистрирован.",
-                        user.getEmail()
-                ));
-            }
-        }
+    public User createUser(User user) {
+        validationEmail(user);
         ++id;
         user.setId(id);
         users.put(user.getId(), user);
+        return user;
     }
 
     @Override
-    public User updateUser(User user) {
-        if (users.containsKey(user.getId())) {
-            users.put(user.getId(), user);
+    public User updateUser(Integer userId, User user) {
+        if (users.containsKey(userId)) {
+            validationEmail(user);
+            users.put(userId, user);
             log.info("Пользователь {} был обновлен", user.getName());
             return user;
         } else {
@@ -58,9 +53,22 @@ public class UserRepositoryImpl implements UserRepository{
         return users.get(id);
     }
 
-    public void validationId(Integer id) {
+    private void validationId(Integer id) {
         if (!users.containsKey(id)) {
             throw new UserIdException(String.format("Пользователя с id %s не существует", id));
+        }
+    }
+
+    private void validationEmail(User user) {
+        Map<Integer, User> userDel = users;
+        userDel.remove(user.getId());
+        for (User u : userDel.values()) {
+            if (u.getEmail().equals(user.getEmail())) {
+                throw new UserEmailException(String.format(
+                        "Пользователь с электронной почтой %s уже зарегистрирован.",
+                        user.getEmail()
+                ));
+            }
         }
     }
 }

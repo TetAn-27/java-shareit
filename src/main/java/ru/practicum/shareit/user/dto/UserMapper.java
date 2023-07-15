@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.dto;
 
+import lombok.Builder;
 import ru.practicum.shareit.user.User;
 
 public class UserMapper {
@@ -10,11 +11,19 @@ public class UserMapper {
         );
     }
 
-    public static User toUser(UserDto userDto) {
+    public static User toUser(int userId, UserDto userDto) {
         return new User(
-                0,
+                userId,
                 userDto.getName(),
                 userDto.getEmail()
+        );
+    }
+
+    public static User toUserForUpdate(int userId, UserDto userDto, User user) {
+        return new User(
+                userId,
+                userDto.getName() != null ? userDto.getName() :user.getName(),
+                userDto.getEmail() != null ? userDto.getEmail() :user.getEmail()
         );
     }
 }

@@ -16,17 +16,19 @@ public class ItemRepositoryImpl implements ItemRepository {
     private final Map<Integer, Item> items = new HashMap<>();
     private int id = 0;
     @Override
-    public void createItem(Item item) {
+    public Item createItem(Item item) {
         ++id;
         item.setId(id);
         items.put(id, item);
         log.info("Предмет {} был добавлен", item.getName());
+        return item;
     }
 
     @Override
-    public Item updateItem(Item item) {
-        if (items.containsKey(item.getId())) {
-            items.put(item.getId(), item);
+    public Item updateItem(Integer itemId, Item item) {
+        if (items.containsKey(itemId)) {
+            item.setId(id);
+            items.put(itemId, item);
             log.info("Предмет {} был обновлен", item.getName());
             return item;
         } else {

@@ -10,8 +10,11 @@ import javax.validation.constraints.NotEmpty;
 @Data
 @AllArgsConstructor
 public class User {
+
     private int id;
+
     private String name;
+
     @Email(message = "Некорректный email")
     @NotEmpty(message = "email не может быть пустым")
     @NonNull

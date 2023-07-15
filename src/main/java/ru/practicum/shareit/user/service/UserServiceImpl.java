@@ -21,27 +21,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> findAll() {
+    public List<User> findAll() {
         List<User> allUsers = userRepository.getUsers();
         log.debug("Текущее количество пользователей: {}", allUsers.size());
-        return toListUserDto(allUsers);
+        return allUsers;
     }
 
     @Override
-    public Optional<UserDto> create(UserDto userDto) {
-        userRepository.createUser(UserMapper.toUser(userDto));
-        return Optional.of(userDto);
+    public Optional<User> create(UserDto userDto) {
+        //userRepository.createUser(UserMapper.toUser(userDto));
+        return Optional.of(userRepository.createUser(UserMapper.toUser(0, userDto)));
     }
 
     @Override
-    public Optional<UserDto> update(UserDto userDto) {
-        return Optional.of(UserMapper.toUserDto(userRepository.updateUser(UserMapper.toUser(userDto))));
+    public Optional<User> update(Integer userId, UserDto userDto) {
+        return Optional.of(userRepository.updateUser(userId,
+                UserMapper.toUserForUpdate(userId, userDto, getUserById(userId).get())));
 
     }
 
     @Override
-    public Optional<UserDto> getUserById(Integer id) {
-        return Optional.of(UserMapper.toUserDto(userRepository.getUserById(id)));
+    public Optional<User> getUserById(Integer id) {
+        return Optional.of(userRepository.getUserById(id));
     }
 
     @Override
@@ -49,11 +50,11 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteUser(userId);
     }
 
-    private List<UserDto> toListUserDto(List<User> userList) {
+    /*private List<UserDto> toListUserDto(List<User> userList) {
         List<UserDto> userDtoList = new ArrayList<>();
         for (User user : userList) {
             userDtoList.add(UserMapper.toUserDto(user));
         }
         return userDtoList;
-    }
+    }*/
 }

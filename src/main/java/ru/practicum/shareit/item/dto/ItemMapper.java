@@ -22,4 +22,15 @@ public class ItemMapper {
                 null
         );
     }
+
+    public static Item toItemForUpdate(int userId, ItemDto itemDto, Item item) {
+        return new Item(
+                item.getId(),
+                itemDto.getName() != null ? itemDto.getName() :item.getName(),
+                itemDto.getDescription() != null ? itemDto.getDescription() :item.getDescription(),
+                (Boolean)itemDto.isAvailable() != null ? itemDto.isAvailable() :item.isAvailable(),
+                userId,
+                null
+        );
+    }
 }
