@@ -1,11 +1,15 @@
 package ru.practicum.shareit.user.storage;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.UserEmailException;
 import ru.practicum.shareit.exception.UserIdException;
 import ru.practicum.shareit.user.User;
 
 import java.util.*;
 
+@Slf4j
+@Component
 public class UserRepositoryImpl implements UserRepository{
     private final Map<Integer, User> users = new HashMap<>();
     private int id = 0;
@@ -49,10 +53,6 @@ public class UserRepositoryImpl implements UserRepository{
         validationId(id);
         return users.get(id);
     }
-
-    /*private int getId() {
-        return ++id;
-    }*/
 
     public void validationId(Integer id) {
         if (!users.containsKey(id)) {

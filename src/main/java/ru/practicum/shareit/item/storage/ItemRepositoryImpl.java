@@ -7,7 +7,6 @@ import ru.practicum.shareit.item.model.Item;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -23,13 +22,23 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Optional<Item> updateItem(Item item) {
+    public Item updateItem(Item item) {
         if (items.containsKey(item.getId())) {
             items.put(item.getId(), item);
             log.info("Предмет {} был обновлен", item.getName());
-            return Optional.of(item);
+            return item;
         } else {
             throw new NotFoundException("Item с таким ID не был найден");
+        }
+    }
+
+    @Override
+    public Item getItemById(int itemId) {
+        if (items.containsKey(itemId)) {
+            log.debug("Предмет с id: {}", itemId);
+            return items.get(itemId);
+        } else {
+            throw new NotFoundException("Предмет с таким ID не был найден");
         }
     }
 }

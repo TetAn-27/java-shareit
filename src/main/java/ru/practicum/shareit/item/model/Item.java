@@ -16,6 +16,6 @@ public class Item {
     @Size(max = 200, message = "Описание фильма превышает 200 символов")
     private String description;
     private boolean available;
-    private int owner;
+    private final int owner;
     private ItemRequest request;
 }
