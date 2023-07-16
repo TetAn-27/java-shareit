@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface ItemService {
 
-    Optional<Item> create(int userId, ItemDto itemDto);
-    Optional<Item>  update(int userId, Integer itemId, ItemDto itemDto);
-    Optional<Item> getItemById(int itemId);
-    List<Item> getAllUserItems(int userId);
-    List<Item> searchForItems(String text);
+    Optional<ItemDto> create(int userId, ItemDto itemDto);
+    Optional<ItemDto>  update(int userId, Integer itemId, ItemDto itemDto);
+    Optional<ItemDto> getItemById(int itemId);
+    List<ItemDto> getAllUserItems(int userId);
+    List<ItemDto> searchForItems(String text);
 }

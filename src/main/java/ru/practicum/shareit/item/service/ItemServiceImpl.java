@@ -24,24 +24,24 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Optional<Item> create(int userId, ItemDto itemDto) {
+    public Optional<ItemDto> create(int userId, ItemDto itemDto) {
         //itemRepository.createItem(ItemMapper.toItem(userId, itemDto));
-        return Optional.of(itemRepository.createItem(ItemMapper.toItem(userId, itemDto)));
+        return Optional.of(ItemMapper.toItemDto(itemRepository.createItem(ItemMapper.toItem(userId, itemDto))));
     }
 
     @Override
-    public Optional<Item> update(int userId, Integer itemId, ItemDto itemDto) {
+    public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
         if (itemRepository.getItemById(itemId).getOwner()!=userId) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
-        return Optional.of(itemRepository.updateItem(itemId,
-                ItemMapper.toItemForUpdate(userId, itemDto, getItemById(itemId).get())));
+        return Optional.of(ItemMapper.toItemDto(itemRepository.updateItem(itemId,
+                ItemMapper.toItemForUpdate(userId, itemDto, itemRepository.getItemById(itemId)))));
     }
 
     @Override
-    public Optional<Item> getItemById(int itemId) {
+    public Optional<ItemDto> getItemById(int itemId) {
         try {
-            return Optional.of(itemRepository.getItemById(itemId));
+            return Optional.of(ItemMapper.toItemDto(itemRepository.getItemById(itemId)));
         } catch (NotFoundException ex) {
             log.error("Предмет с ID {} не был найден", itemId);
             throw new NotFoundException("Предмет с таким ID не был найден");
@@ -49,20 +49,20 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> getAllUserItems(int userId) {
-        return itemRepository.getAllUserItems(userId);
+    public List<ItemDto> getAllUserItems(int userId) {
+        return toListItemDto(itemRepository.getAllUserItems(userId));
     }
 
     @Override
-    public List<Item> searchForItems(String text) {
-        return itemRepository.searchForItems(text);
+    public List<ItemDto> searchForItems(String text) {
+        return toListItemDto(itemRepository.searchForItems(text));
     }
 
-    /*private List<ItemDto> toListItemDto(List<Item> itemList) {
+    private List<ItemDto> toListItemDto(List<Item> itemList) {
         List<ItemDto> itemDtoList = new ArrayList<>();
         for (Item item : itemList) {
             itemDtoList.add(ItemMapper.toItemDto(item));
         }
         return itemDtoList;
-    }*/
+    }
 }
