@@ -21,28 +21,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
+    public List<UserDto> findAll() {
         List<User> allUsers = userRepository.getUsers();
         log.debug("Текущее количество пользователей: {}", allUsers.size());
-        return allUsers;
+        return toListUserDto(allUsers);
     }
 
     @Override
-    public Optional<User> create(UserDto userDto) {
+    public Optional<UserDto> create(UserDto userDto) {
         //userRepository.createUser(UserMapper.toUser(userDto));
-        return Optional.of(userRepository.createUser(UserMapper.toUser(0, userDto)));
+        return Optional.of(UserMapper.toUserDto(userRepository.createUser(UserMapper.toUser(0, userDto))));
     }
 
     @Override
-    public Optional<User> update(Integer userId, UserDto userDto) {
-        return Optional.of(userRepository.updateUser(userId,
-                UserMapper.toUserForUpdate(userId, userDto, getUserById(userId).get())));
+    public Optional<UserDto> update(Integer userId, UserDto userDto) {
+        return Optional.of(UserMapper.toUserDto(userRepository.updateUser(userId,
+                UserMapper.toUserForUpdate(userId, userDto, userRepository.getUserById(userId)))));
 
     }
 
     @Override
-    public Optional<User> getUserById(Integer id) {
-        return Optional.of(userRepository.getUserById(id));
+    public Optional<UserDto> getUserById(Integer id) {
+        return Optional.of(UserMapper.toUserDto(userRepository.getUserById(id)));
     }
 
     @Override
@@ -50,11 +50,11 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteUser(userId);
     }
 
-    /*private List<UserDto> toListUserDto(List<User> userList) {
+    private List<UserDto> toListUserDto(List<User> userList) {
         List<UserDto> userDtoList = new ArrayList<>();
         for (User user : userList) {
             userDtoList.add(UserMapper.toUserDto(user));
         }
         return userDtoList;
-    }*/
+    }
 }

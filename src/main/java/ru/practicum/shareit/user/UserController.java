@@ -21,22 +21,22 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public Optional<User> getUserById(@PathVariable("userId") Integer id) {
+    public Optional<UserDto> getUserById(@PathVariable("userId") Integer id) {
         return userService.getUserById(id);
     }
 
     @GetMapping
-    public List<User> findAll() {
+    public List<UserDto> findAll() {
         return userService.findAll();
     }
 
     @PostMapping
-    public Optional<User> create(@Valid @RequestBody UserDto userDto) {
+    public Optional<UserDto> create(@Valid @RequestBody UserDto userDto) {
         return userService.create(userDto);
     }
 
     @PatchMapping("/{userId}")
-    public Optional<User> update(@PathVariable("userId") Integer userId,
+    public Optional<UserDto> update(@PathVariable("userId") Integer userId,
                                     @Valid @RequestBody UserDto userDto) {
         return userService.update(userId, userDto);
     }

@@ -7,13 +7,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    List<User> findAll();
+    List<UserDto> findAll();
 
-    Optional<User> create(UserDto userDto);
+    Optional<UserDto> create(UserDto userDto);
 
-    Optional<User> update(Integer userId, UserDto userDto);
+    Optional<UserDto> update(Integer userId, UserDto userDto);
 
-    Optional<User> getUserById(Integer userId);
+    Optional<UserDto> getUserById(Integer userId);
 
     void deleteUser(Integer userId);
 }
