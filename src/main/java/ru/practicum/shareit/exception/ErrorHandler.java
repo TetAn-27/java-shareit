@@ -10,11 +10,11 @@ import ru.practicum.shareit.user.UserController;
 import javax.validation.ValidationException;
 import java.util.Map;
 
-@RestControllerAdvice(assignableTypes = {ItemController.class, UserController.class})
+@RestControllerAdvice()
 public class ErrorHandler {
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> handleValidationException(final ValidationException e) {
         return Map.of("error", "Ошибка при валидации параметров");
     }
@@ -25,9 +25,9 @@ public class ErrorHandler {
         return Map.of("error", "Объект не найден");
     }
 
-    @ExceptionHandler
+    /*@ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleThrowableException(final Throwable e) {
         return Map.of("error", "Возникло исключение");
-    }
+    }*/
 }

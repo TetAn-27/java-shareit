@@ -6,17 +6,23 @@ import lombok.NonNull;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 @Data
-@AllArgsConstructor
 public class User {
+
+    public User(int id, String name, @Email @NonNull @NotEmpty String email) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
 
     private int id;
 
     private String name;
 
     @Email(message = "Некорректный email")
-    @NotEmpty(message = "email не может быть пустым")
+    @NotEmpty(message = "Email не может быть пустым")
     @NonNull
     private String email;
 }

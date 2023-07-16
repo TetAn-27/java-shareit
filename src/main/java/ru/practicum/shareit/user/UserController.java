@@ -37,7 +37,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public Optional<UserDto> update(@PathVariable("userId") Integer userId,
-                                    @Valid @RequestBody UserDto userDto) {
+                                    @RequestBody UserDto userDto) {
         return userService.update(userId, userDto);
     }
 

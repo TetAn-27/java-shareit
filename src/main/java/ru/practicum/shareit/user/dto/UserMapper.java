@@ -1,7 +1,12 @@
 package ru.practicum.shareit.user.dto;
 
 import lombok.Builder;
+import lombok.NonNull;
 import ru.practicum.shareit.user.User;
+
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
 
 public class UserMapper {
     public static UserDto toUserDto(User user) {

@@ -8,7 +8,7 @@ public class ItemMapper {
                 item.getId(),
                 item.getName(),
                 item.getDescription(),
-                item.isAvailable(),
+                item.getAvailable(),
                 item.getRequest() != null ? item.getRequest().getId() : null
         );
     }
@@ -18,7 +18,7 @@ public class ItemMapper {
                 0,
                 itemDto.getName(),
                 itemDto.getDescription(),
-                itemDto.isAvailable(),
+                itemDto.getAvailable(),
                 userId,
                 null
         );
@@ -29,7 +29,7 @@ public class ItemMapper {
                 item.getId(),
                 itemDto.getName() != null ? itemDto.getName() :item.getName(),
                 itemDto.getDescription() != null ? itemDto.getDescription() :item.getDescription(),
-                (Boolean)itemDto.isAvailable() != null ? itemDto.isAvailable() :item.isAvailable(),
+                itemDto.getAvailable() != null ? itemDto.getAvailable() :item.getAvailable(),
                 userId,
                 null
         );

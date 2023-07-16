@@ -63,7 +63,7 @@ public class ItemRepositoryImpl implements ItemRepository {
         for (Item item : items.values()) {
             boolean isContainsInDescriptions = item.getDescription().contains(text);
             boolean isContainsInName = item.getName().contains(text);
-            if (item.isAvailable() && (isContainsInDescriptions || isContainsInName)) {
+            if (item.getAvailable() && (isContainsInDescriptions || isContainsInName)) {
                 listOfFoundItems.add(item);
             }
         }

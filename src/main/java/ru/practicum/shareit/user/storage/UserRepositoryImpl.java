@@ -60,15 +60,14 @@ public class UserRepositoryImpl implements UserRepository{
     }
 
     private void validationEmail(User user) {
-        Map<Integer, User> userDel = users;
-        userDel.remove(user.getId());
-        for (User u : userDel.values()) {
-            if (u.getEmail().equals(user.getEmail())) {
-                throw new UserEmailException(String.format(
-                        "Пользователь с электронной почтой %s уже зарегистрирован.",
-                        user.getEmail()
-                ));
-            }
+        boolean isValidEmail = users.values().stream()
+                .filter(u -> !Objects.equals(u.getId(), user.getId()))
+                .anyMatch(u -> Objects.equals(user.getEmail(), u.getEmail()));
+        if (isValidEmail) {
+            throw new UserEmailException(String.format(
+                    "Пользователь с электронной почтой %s уже зарегистрирован.",
+                    user.getEmail()
+            ));
         }
     }
 }
