@@ -29,7 +29,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<UserDto> create(UserDto userDto) {
-        //userRepository.createUser(UserMapper.toUser(userDto));
         return Optional.of(UserMapper.toUserDto(userRepository.createUser(UserMapper.toUser(0, userDto))));
     }
 

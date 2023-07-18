@@ -60,6 +60,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchForItems(String text) {
+        if (text.isEmpty()) {
+            return new ArrayList<>();
+        }
         return toListItemDto(itemRepository.searchForItems(text.toLowerCase()));
     }
 

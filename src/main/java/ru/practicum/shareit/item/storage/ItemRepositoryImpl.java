@@ -67,6 +67,7 @@ public class ItemRepositoryImpl implements ItemRepository {
                 listOfFoundItems.add(item);
             }
         }
+        log.info("Было найдено {} вещи(-ей)", listOfFoundItems.size());
         return listOfFoundItems;
     }
 }
