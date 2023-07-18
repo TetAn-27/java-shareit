@@ -27,9 +27,9 @@ public class ItemMapper {
     public static Item toItemForUpdate(int userId, ItemDto itemDto, Item item) {
         return new Item(
                 item.getId(),
-                itemDto.getName() != null ? itemDto.getName() :item.getName(),
-                itemDto.getDescription() != null ? itemDto.getDescription() :item.getDescription(),
-                itemDto.getAvailable() != null ? itemDto.getAvailable() :item.getAvailable(),
+                itemDto.getName() != null ? itemDto.getName() : item.getName(),
+                itemDto.getDescription() != null ? itemDto.getDescription() : item.getDescription(),
+                itemDto.getAvailable() != null ? itemDto.getAvailable() : item.getAvailable(),
                 userId,
                 null
         );

@@ -11,7 +11,7 @@ import java.util.*;
 
 @Slf4j
 @Component
-public class UserRepositoryImpl implements UserRepository{
+public class UserRepositoryImpl implements UserRepository {
     private final Map<Integer, User> users = new HashMap<>();
     private int id = 0;
 

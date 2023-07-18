@@ -15,6 +15,7 @@ import java.util.Map;
 public class ItemRepositoryImpl implements ItemRepository {
     private final Map<Integer, Item> items = new HashMap<>();
     private int id = 0;
+
     @Override
     public Item createItem(Item item) {
         ++id;
@@ -50,7 +51,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public List<Item> getAllUserItems(int userId) {
         List<Item> userItems = new ArrayList<>();
         for (Item item : items.values()) {
-            if (item.getOwner()==userId) {
+            if (item.getOwner() == userId) {
                 userItems.add(item);
             }
         }
