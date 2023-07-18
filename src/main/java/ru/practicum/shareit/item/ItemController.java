@@ -41,7 +41,7 @@ public class ItemController {
         return itemService.getAllUserItems(userId);
     }
 
-    @GetMapping("/items/search")
+    @GetMapping("/search")
     public List<ItemDto> searchForItems(@RequestParam(value = "text") String text) {
         return itemService.searchForItems(text);
     }

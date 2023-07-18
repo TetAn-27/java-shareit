@@ -60,7 +60,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDto> searchForItems(String text) {
-        return toListItemDto(itemRepository.searchForItems(text));
+        return toListItemDto(itemRepository.searchForItems(text.toLowerCase()));
     }
 
     private List<ItemDto> toListItemDto(List<Item> itemList) {

@@ -61,8 +61,8 @@ public class ItemRepositoryImpl implements ItemRepository {
     public List<Item> searchForItems(String text) {
         List<Item> listOfFoundItems = new ArrayList<>();
         for (Item item : items.values()) {
-            boolean isContainsInDescriptions = item.getDescription().contains(text);
-            boolean isContainsInName = item.getName().contains(text);
+            boolean isContainsInDescriptions = item.getDescription().toLowerCase().contains(text);
+            boolean isContainsInName = item.getName().toLowerCase().contains(text);
             if (item.getAvailable() && (isContainsInDescriptions || isContainsInName)) {
                 listOfFoundItems.add(item);
             }
