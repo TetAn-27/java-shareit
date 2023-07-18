@@ -9,6 +9,7 @@ public interface UserRepository {
     User createUser(User user);
     User updateUser(Integer userId, User user);
     void deleteUser(Integer userId);
-    User getUserById(Integer id);
+    User getUserById(Integer userId);
     List<User> getUsers();
+    boolean isContainsUserId(Integer userId);
 }

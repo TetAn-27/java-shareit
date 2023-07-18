@@ -53,6 +53,11 @@ public class UserRepositoryImpl implements UserRepository{
         return users.get(id);
     }
 
+    @Override
+    public boolean isContainsUserId(Integer userId) {
+        return users.containsKey(userId);
+    }
+
     private void validationId(Integer id) {
         if (!users.containsKey(id)) {
             throw new UserIdException(String.format("Пользователя с id %s не существует", id));

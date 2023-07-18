@@ -8,6 +8,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.user.storage.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,14 +19,18 @@ import java.util.Optional;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
-    public ItemServiceImpl(ItemRepository itemRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
         this.itemRepository = itemRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public Optional<ItemDto> create(int userId, ItemDto itemDto) {
-        //itemRepository.createItem(ItemMapper.toItem(userId, itemDto));
+        if (!userRepository.isContainsUserId(userId)) {
+            throw new UserItemException("Такой пользователь не зарегестрирован");
+        }
         return Optional.of(ItemMapper.toItemDto(itemRepository.createItem(ItemMapper.toItem(userId, itemDto))));
     }
 
