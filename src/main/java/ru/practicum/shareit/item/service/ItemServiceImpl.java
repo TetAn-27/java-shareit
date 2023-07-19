@@ -37,11 +37,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
-        if (itemRepository.getItemById(itemId).getOwner().getId() != userId) {
+        Item item = itemRepository.getItemById(itemId);
+        if (item.getOwner().getId() != userId) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
         return Optional.of(ItemMapper.toItemDto(itemRepository.updateItem(itemId,
-                ItemMapper.toItemForUpdate(userRepository.getUserById(userId), itemDto, itemRepository.getItemById(itemId)))));
+                ItemMapper.toItemForUpdate(userRepository.getUserById(userId), itemDto, item))));
     }
 
     @Override
