@@ -28,7 +28,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     @Override
     public Item updateItem(Integer itemId, Item item) {
         if (items.containsKey(itemId)) {
-            item.setId(id);
+            item.setId(itemId);
             items.put(itemId, item);
             log.info("Предмет {} был обновлен", item.getName());
             return item;
@@ -51,7 +51,7 @@ public class ItemRepositoryImpl implements ItemRepository {
     public List<Item> getAllUserItems(int userId) {
         List<Item> userItems = new ArrayList<>();
         for (Item item : items.values()) {
-            if (item.getOwner() == userId) {
+            if (item.getOwner().getId() == userId) {
                 userItems.add(item);
             }
         }
