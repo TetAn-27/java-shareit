@@ -6,7 +6,6 @@ import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/users")
@@ -18,8 +17,8 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public Optional<UserDto> getUserById(@PathVariable("userId") Integer id) {
-        return userService.getUserById(id);
+    public UserDto getUserById(@PathVariable("userId") Integer id) {
+        return userService.getUserById(id).get();
     }
 
     @GetMapping
@@ -28,14 +27,14 @@ public class UserController {
     }
 
     @PostMapping
-    public Optional<UserDto> create(@Valid @RequestBody UserDto userDto) {
-        return userService.create(userDto);
+    public UserDto create(@Valid @RequestBody UserDto userDto) {
+        return userService.create(userDto).get();
     }
 
     @PatchMapping("/{userId}")
-    public Optional<UserDto> update(@PathVariable("userId") Integer userId,
+    public UserDto update(@PathVariable("userId") Integer userId,
                                     @RequestBody UserDto userDto) {
-        return userService.update(userId, userDto);
+        return userService.update(userId, userDto).get();
     }
 
     @DeleteMapping("/{userId}")
