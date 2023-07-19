@@ -31,16 +31,17 @@ public class ItemServiceImpl implements ItemService {
         if (!userRepository.isContainsUserId(userId)) {
             throw new UserItemException("Такой пользователь не зарегестрирован");
         }
-        return Optional.of(ItemMapper.toItemDto(itemRepository.createItem(ItemMapper.toItem(userId, itemDto))));
+        return Optional.of(ItemMapper.toItemDto(itemRepository.createItem(
+                ItemMapper.toItem(userRepository.getUserById(userId), itemDto))));
     }
 
     @Override
     public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
-        if (itemRepository.getItemById(itemId).getOwner() != userId) {
+        if (itemRepository.getItemById(itemId).getOwner().getId() != userId) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
         return Optional.of(ItemMapper.toItemDto(itemRepository.updateItem(itemId,
-                ItemMapper.toItemForUpdate(userId, itemDto, itemRepository.getItemById(itemId)))));
+                ItemMapper.toItemForUpdate(userRepository.getUserById(userId), itemDto, itemRepository.getItemById(itemId)))));
     }
 
     @Override
