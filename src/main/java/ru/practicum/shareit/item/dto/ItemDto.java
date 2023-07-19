@@ -10,7 +10,7 @@ import javax.validation.constraints.Size;
 @Data
 @AllArgsConstructor
 public class ItemDto {
-    private int id;
+    private Integer id;
     @NotNull
     @NotBlank(message = "Название не может быть пустым")
     private String name;

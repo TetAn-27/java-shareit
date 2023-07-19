@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 @Data
 @AllArgsConstructor
 public class UserDto {
-    private int id;
+    private Integer id;
     private String name;
     @Email(message = "Некорректный email")
     @NotEmpty(message = "Email не может быть пустым")
