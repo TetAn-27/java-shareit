@@ -12,7 +12,7 @@ public class User {
 
     private Integer id;
     private String name;
-    @Email(message = "Некорректный email")
-    @NotEmpty(message = "Email не может быть пустым")
+    @Email
+    @NotEmpty
     private String email;
 }

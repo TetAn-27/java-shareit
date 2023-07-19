@@ -14,10 +14,10 @@ import javax.validation.constraints.Size;
 public class Item {
     private Integer id;
     @NotNull
-    @NotBlank(message = "Название не может быть пустым")
+    @NotBlank
     private String name;
     @NotNull
-    @Size(max = 200, message = "Описание фильма превышает 200 символов")
+    @Size(max = 200)
     private String description;
     @NotNull
     private Boolean available;
