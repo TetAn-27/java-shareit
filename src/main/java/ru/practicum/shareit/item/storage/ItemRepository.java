@@ -8,7 +8,7 @@ public interface ItemRepository {
 
     Item createItem(Item item);
 
-    Item updateItem(Integer itemId, Item item);
+    Item updateItem(Integer itemId, Item item, Item itemUpdate);
 
     Item getItemById(int itemId);
 

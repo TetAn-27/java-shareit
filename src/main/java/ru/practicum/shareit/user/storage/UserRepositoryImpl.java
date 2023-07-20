@@ -30,10 +30,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public User updateUser(Integer userId, User user) {
+    public User updateUser(Integer userId, User userUpdate) {
+        User user = getUserById(userId);
         if (users.containsKey(userId)) {
-            validationEmail(user);
-            users.put(userId, user);
+            validationEmail(userUpdate);
+            user.setName(userUpdate.getName() != null ? userUpdate.getName() : user.getName());
+            user.setEmail(userUpdate.getEmail() != null ? userUpdate.getEmail() : user.getEmail());
             log.info("Пользователь {} был обновлен", user.getName());
             return user;
         } else {

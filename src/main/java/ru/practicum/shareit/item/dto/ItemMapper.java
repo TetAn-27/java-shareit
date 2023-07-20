@@ -24,15 +24,4 @@ public class ItemMapper {
                 null
         );
     }
-
-    public static Item toItemForUpdate(User user, ItemDto itemDto, Item item) {
-        return new Item(
-                item.getId(),
-                itemDto.getName() != null ? itemDto.getName() : item.getName(),
-                itemDto.getDescription() != null ? itemDto.getDescription() : item.getDescription(),
-                itemDto.getAvailable() != null ? itemDto.getAvailable() : item.getAvailable(),
-                user,
-                null
-        );
-    }
 }

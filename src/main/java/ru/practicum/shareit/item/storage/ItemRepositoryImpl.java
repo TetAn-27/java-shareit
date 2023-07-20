@@ -26,10 +26,11 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Item updateItem(Integer itemId, Item item) {
+    public Item updateItem(Integer itemId, Item item, Item itemUpdate) {
         if (items.containsKey(itemId)) {
-            item.setId(itemId);
-            items.put(itemId, item);
+            item.setName(itemUpdate.getName() != null ? itemUpdate.getName() : item.getName());
+            item.setDescription(itemUpdate.getDescription() != null ? itemUpdate.getDescription() : item.getDescription());
+            item.setAvailable(itemUpdate.getAvailable() != null ? itemUpdate.getAvailable() : item.getAvailable());
             log.info("Предмет {} был обновлен", item.getName());
             return item;
         } else {

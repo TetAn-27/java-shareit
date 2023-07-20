@@ -18,12 +18,4 @@ public class UserMapper {
                 userDto.getEmail()
         );
     }
-
-    public static User toUserForUpdate(int userId, UserDto userDto, User user) {
-        return new User(
-                userId,
-                userDto.getName() != null ? userDto.getName() : user.getName(),
-                userDto.getEmail() != null ? userDto.getEmail() : user.getEmail()
-        );
-    }
 }
