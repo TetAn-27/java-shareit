@@ -5,10 +5,8 @@ import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -61,15 +59,10 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public List<Item> searchForItems(String text) {
-        List<Item> listOfFoundItems = new ArrayList<>();
-        for (Item item : items.values()) {
-            boolean isContainsInDescriptions = item.getDescription().toLowerCase().contains(text);
-            boolean isContainsInName = item.getName().toLowerCase().contains(text);
-            if (item.getAvailable() && (isContainsInDescriptions || isContainsInName)) {
-                listOfFoundItems.add(item);
-            }
-        }
-        log.info("Было найдено {} вещи(-ей)", listOfFoundItems.size());
-        return listOfFoundItems;
+        return items.values().stream()
+                .filter(i -> i.getAvailable()
+                        && i.getDescription().toLowerCase().contains(text)
+                        || i.getName().toLowerCase().contains(text))
+                .collect(Collectors.toList());
     }
 }
