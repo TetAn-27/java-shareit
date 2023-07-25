@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS items(
     name varchar UNIQUE NOT NULL,
     description varchar(200) UNIQUE NOT NULL,
     is_available boolean UNIQUE NOT NULL,
-    owner_id integer REFERENCES users (id),
+    owner_id integer REFERENCES users (id) UNIQUE NOT NULL,
     request_id integer REFERENCES requests (id)
 );
 
