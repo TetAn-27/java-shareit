@@ -15,6 +15,7 @@ import javax.validation.constraints.Size;
 @Entity
 @Table(name = "items")
 public class Item {
+
     @Id
     private Integer id;
     @NotNull
