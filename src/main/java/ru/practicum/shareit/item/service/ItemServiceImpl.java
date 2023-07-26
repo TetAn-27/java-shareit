@@ -26,47 +26,47 @@ public class ItemServiceImpl implements ItemService {
         this.userRepository = userRepository;
     }
 
-    @Override
+    /*@Override
     public Optional<ItemDto> create(int userId, ItemDto itemDto) {
         if (!userRepository.isContainsUserId(userId)) {
             throw new UserItemException("Такой пользователь не зарегестрирован");
         }
-        return Optional.of(ItemMapper.toItemDto(itemRepository.createItem(
-                ItemMapper.toItem(userRepository.getUserById(userId), itemDto))));
-    }
+        return Optional.of(ItemMapper.toItemDto(itemRepository.save(
+                ItemMapper.toItem(userRepository.getById(userId), itemDto))));
+    }*/
 
     @Override
     public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
-        Item item = itemRepository.getItemById(itemId);
+        Item item = itemRepository.getById(itemId);
         if (item.getOwner().getId() != userId) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
-        return Optional.of(ItemMapper.toItemDto(itemRepository.updateItem(itemId, item,
-                ItemMapper.toItem(userRepository.getUserById(userId), itemDto))));
+        return Optional.of(ItemMapper.toItemDto(itemRepository.save(
+                ItemMapper.toItem(userRepository.getById(userId), itemDto))));
     }
 
     @Override
     public Optional<ItemDto> getItemById(int itemId) {
         try {
-            return Optional.of(ItemMapper.toItemDto(itemRepository.getItemById(itemId)));
+            return Optional.of(ItemMapper.toItemDto(itemRepository.getById(itemId)));
         } catch (NotFoundException ex) {
             log.error("Предмет с ID {} не был найден", itemId);
             throw new NotFoundException("Предмет с таким ID не был найден");
         }
     }
 
-    @Override
+   /* @Override
     public List<ItemDto> getAllUserItems(int userId) {
         return toListItemDto(itemRepository.getAllUserItems(userId));
-    }
+    }*/
 
-    @Override
+    /*@Override
     public List<ItemDto> searchForItems(String text) {
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
         return toListItemDto(itemRepository.searchForItems(text.toLowerCase()));
-    }
+    }*/
 
     private List<ItemDto> toListItemDto(List<Item> itemList) {
         List<ItemDto> itemDtoList = new ArrayList<>();
