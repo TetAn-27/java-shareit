@@ -1,16 +1,17 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exception.UserEmailException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.storage.UserRepository;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -32,27 +33,35 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserDto> create(UserDto userDto) {
         User user = UserMapper.toUser(0, userDto);
-        validationEmail(user);
         return Optional.of(UserMapper.toUserDto(userRepository.save(user)));
     }
 
     @Override
     public Optional<UserDto> update(Integer userId, UserDto userDto) {
-        User user = UserMapper.toUser(userId, userDto);
-        validationEmail(user);
+        User user = getUpdateUser(userId, UserMapper.toUser(userId, userDto));
         return Optional.of(UserMapper.toUserDto(userRepository.save(user)));
 
     }
 
     @Override
     public Optional<UserDto> getUserById(Integer id) {
-        return Optional.of(UserMapper.toUserDto(userRepository.getById(id)));
+        try {
+            return Optional.of(UserMapper.toUserDto(userRepository.getById(id)));
+        } catch (EntityNotFoundException ex) {
+            log.error("User с ID {} не был найден", id);
+            throw new NotFoundException("User с таким ID не был найден");
+        }
     }
 
-    /*@Override
+    @Override
     public void deleteUser(Integer userId) {
-        userRepository.delete(userId);
-    }*/
+        try {
+            userRepository.deleteById(userId);
+        } catch (DataAccessException ex) {
+            log.error("User с ID {} не был найден", userId);
+            throw new NotFoundException("User с таким ID не был найден");
+        }
+    }
 
     private List<UserDto> toListUserDto(List<User> userList) {
         List<UserDto> userDtoList = new ArrayList<>();
@@ -62,15 +71,11 @@ public class UserServiceImpl implements UserService {
         return userDtoList;
     }
 
-    private void validationEmail(User user) {
-        boolean isValidEmail = findAll().stream()
-                .filter(u -> !Objects.equals(u.getId(), user.getId()))
-                .anyMatch(u -> Objects.equals(user.getEmail(), u.getEmail()));
-        if (isValidEmail) {
-            throw new UserEmailException(String.format(
-                    "Пользователь с электронной почтой %s уже зарегистрирован.",
-                    user.getEmail()
-            ));
-        }
+    private User getUpdateUser(Integer userId, User userUpdate) {
+        User user = userRepository.getById(userId);
+        user.setName(userUpdate.getName() != null ? userUpdate.getName() : user.getName());
+        user.setEmail(userUpdate.getEmail() != null ? userUpdate.getEmail() : user.getEmail());
+        log.info("Пользователь {} был обновлен", user.getName());
+        return user;
     }
 }

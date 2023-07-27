@@ -15,5 +15,5 @@ public interface UserService {
 
     Optional<UserDto> getUserById(Integer userId);
 
-    //void deleteUser(Integer userId);
+    void deleteUser(Integer userId);
 }

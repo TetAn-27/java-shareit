@@ -37,8 +37,8 @@ public class UserController {
         return userService.update(userId, userDto).get();
     }
 
-    /*@DeleteMapping("/{userId}")
+    @DeleteMapping("/{userId}")
     public void deleteUser(@PathVariable("userId") Integer userId) {
         userService.deleteUser(userId);
-    }*/
+    }
 }

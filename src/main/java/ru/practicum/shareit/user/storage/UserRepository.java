@@ -7,12 +7,16 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
 
+    @Override
     User save(User user);
 
-    //void delete(Integer userId);
+    @Override
+    void deleteById(Integer userId);
 
+    @Override
     User getById(Integer userId);
 
+    @Override
     List<User> findAll();
 
     //boolean isContainsUserId(Integer userId);
