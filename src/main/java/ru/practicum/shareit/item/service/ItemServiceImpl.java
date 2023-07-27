@@ -10,6 +10,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.storage.UserRepository;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,14 +27,14 @@ public class ItemServiceImpl implements ItemService {
         this.userRepository = userRepository;
     }
 
-    /*@Override
+    @Override
     public Optional<ItemDto> create(int userId, ItemDto itemDto) {
-        if (!userRepository.isContainsUserId(userId)) {
+        if (userRepository.getById(userId) == null) {
             throw new UserItemException("Такой пользователь не зарегестрирован");
         }
         return Optional.of(ItemMapper.toItemDto(itemRepository.save(
                 ItemMapper.toItem(userRepository.getById(userId), itemDto))));
-    }*/
+    }
 
     @Override
     public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
@@ -49,7 +50,7 @@ public class ItemServiceImpl implements ItemService {
     public Optional<ItemDto> getItemById(int itemId) {
         try {
             return Optional.of(ItemMapper.toItemDto(itemRepository.getById(itemId)));
-        } catch (NotFoundException ex) {
+        } catch (EntityNotFoundException ex) {
             log.error("Предмет с ID {} не был найден", itemId);
             throw new NotFoundException("Предмет с таким ID не был найден");
         }

@@ -16,11 +16,11 @@ public class ItemController {
         this.itemService = itemService;
     }
 
-    /*@PostMapping()
+    @PostMapping()
     public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                      @Valid @RequestBody ItemDto itemDto) {
         return itemService.create(userId, itemDto).get();
-    }*/
+    }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Integer userId,

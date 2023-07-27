@@ -18,6 +18,4 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Override
     List<User> findAll();
-
-    //boolean isContainsUserId(Integer userId);
 }
