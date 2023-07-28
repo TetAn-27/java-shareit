@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import ru.practicum.shareit.request.ItemRequest;
 import ru.practicum.shareit.user.User;
 
@@ -19,6 +20,7 @@ import javax.validation.constraints.Size;
 public class Item {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @NotNull
     @NotBlank
@@ -33,8 +35,10 @@ public class Item {
     private Boolean available;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
+    @ToString.Exclude
     private User owner;
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
+    @ToString.Exclude
     private ItemRequest request;
 }

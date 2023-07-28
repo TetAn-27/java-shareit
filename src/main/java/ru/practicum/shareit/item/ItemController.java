@@ -34,7 +34,7 @@ public class ItemController {
         return itemService.getItemById(itemId).get();
     }
 
-    /*@GetMapping()
+    @GetMapping()
     public List<ItemDto> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemService.getAllUserItems(userId);
     }
@@ -42,5 +42,5 @@ public class ItemController {
     @GetMapping("/search")
     public List<ItemDto> searchForItems(@RequestParam(value = "text") String text) {
         return itemService.searchForItems(text);
-    }*/
+    }
 }
