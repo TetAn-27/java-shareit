@@ -32,13 +32,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<UserDto> create(UserDto userDto) {
-        User user = UserMapper.toUser(0, userDto);
+        User user = UserMapper.toUser(userDto);
         return Optional.of(UserMapper.toUserDto(userRepository.save(user)));
     }
 
     @Override
     public Optional<UserDto> update(Integer userId, UserDto userDto) {
-        User user = getUpdateUser(userId, UserMapper.toUser(userId, userDto));
+        User user = getUpdateUser(userId, UserMapper.toUser(userDto));
         return Optional.of(UserMapper.toUserDto(userRepository.save(user)));
 
     }
