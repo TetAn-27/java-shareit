@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UserItemException;
@@ -11,12 +10,14 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,22 +25,18 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, UserService userService) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @Override
     public Optional<ItemDto> create(int userId, ItemDto itemDto) {
         User user = new User();
-        try {
-            user = userRepository.getById(userId);
-
-        } catch (DataIntegrityViolationException ex) {
-            log.error("User с ID {} не был зарегестрирован", userId);
-            throw new UserItemException("Такой пользователь не зарегестрирован");
-        }
+        user = UserMapper.toUser(userId, userService.getUserById(userId).get());
         return Optional.of(ItemMapper.toItemDto(itemRepository.save(
                 ItemMapper.toItem(user, itemDto))));
     }
@@ -73,7 +70,9 @@ public class ItemServiceImpl implements ItemService {
             return new ArrayList<>();
         }
         return toListItemDto(itemRepository.findByNameOrDescriptionContainingIgnoreCase(
-                text.toLowerCase(), text.toLowerCase()));
+                text.toLowerCase(), text.toLowerCase())).stream()
+                .filter(i -> i.getAvailable())
+                .collect(Collectors.toList());
     }
 
     private List<ItemDto> toListItemDto(List<Item> itemList) {
