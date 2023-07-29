@@ -2,12 +2,20 @@ package ru.practicum.shareit.booking;
 
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
 public class BookingController {
+
+    private final BookingService bookingService;
+
+    public BookingController(BookingService bookingService) {
+        this.bookingService = bookingService;
+    }
 
     @PostMapping
     public BookingDto createRequest(@Valid @RequestBody BookingDto bookingDto) {
@@ -29,16 +37,16 @@ public class BookingController {
     }
 
     @GetMapping //GET /bookings?state={state}
-    public BookingDto getAllBookingByBookerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                              @RequestParam(value = "state", defaultValue = "ALL", required = false)
-                                                Boolean state) {
-        return bookingService.getAllBookingByBookerId(userId, state).get();
+    public List<BookingDto> getAllBookingByBookerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                                    @RequestParam(value = "state", defaultValue = "ALL", required = false)
+                                                Status state) {
+        return bookingService.getAllBookingByBookerId(userId, state);
     }
 
     @GetMapping("/owner") //GET /bookings/owner?state={state}
-    public BookingDto getAllBookingByOwnerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public List<BookingDto> getAllBookingByOwnerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                              @RequestParam(value = "state", defaultValue = "ALL", required = false)
-                                              Boolean state) {
-        return bookingService.getAllBookingByOwnerId(userId, state).get();
+                                              Status state) {
+        return bookingService.getAllBookingByOwnerId(userId, state);
     }
 }
