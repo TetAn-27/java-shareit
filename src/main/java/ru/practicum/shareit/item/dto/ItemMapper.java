@@ -16,7 +16,7 @@ public class ItemMapper {
 
     public static Item toItem(User user, ItemDto itemDto) {
         return new Item(
-                0,
+                itemDto.getId() != null ? itemDto.getId() : 0,
                 itemDto.getName(),
                 itemDto.getDescription(),
                 itemDto.getAvailable(),

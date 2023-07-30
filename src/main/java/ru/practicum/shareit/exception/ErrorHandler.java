@@ -22,4 +22,10 @@ public class ErrorHandler {
     public Map<String, String> handleNotFoundException(final NotFoundException e) {
         return Map.of("error", "Объект не найден");
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBadRequestException(final BookingValidException e) {
+        return Map.of("error", "Ошибка запроса");
+    }
 }

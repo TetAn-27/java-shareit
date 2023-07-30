@@ -1,40 +1,30 @@
 package ru.practicum.shareit.booking.dto;
 
 import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.item.dto.ItemMapper;
-import ru.practicum.shareit.item.service.ItemService;
-import ru.practicum.shareit.user.dto.UserMapper;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.User;
 
 public class BookingMapper {
 
-    private final ItemService itemService;
-    private final UserService userService;
-
-    public BookingMapper(ItemService itemService, UserService userService) {
-        this.itemService = itemService;
-        this.userService = userService;
-    }
-
-    public static BookingDto toBookingDto(Booking booking) {
-        return new BookingDto(
+    public static BookingDtoResponse toBookingDto(Booking booking) {
+        return new BookingDtoResponse(
                 booking.getId(),
                 booking.getStart(),
                 booking.getEnd(),
-                booking.getItem() != null ? booking.getItem().getId() : null,
-                booking.getBooker() != null ? booking.getBooker().getId() : null,
+                new BookingDtoResponse.ItemDtoResponse(booking.getItem().getId(), booking.getItem().getName()),
+                new BookingDtoResponse.BookerDtoResponse(booking.getBooker().getId()),
                 booking.getStatus()
         );
     }
 
-    public static Booking toBooking(BookingDto bookingDto) {
+    public static Booking toBooking(Item item, User user, BookingDtoRequest bookingDtoRequest) {
         return new Booking(
                 0,
-                bookingDto.getStart(),
-                bookingDto.getEnd(),
-                null, //ItemMapper.toItem(itemService.getItemById(bookingDto.getItem()).get()),
-                null, //UserMapper.toUser(userService.getUserById(bookingDto.getBooker()).get()),
-                bookingDto.getStatus()
+                bookingDtoRequest.getStart(),
+                bookingDtoRequest.getEnd(),
+                item,
+                user,
+                bookingDtoRequest.getStatus()
         );
     }
 }

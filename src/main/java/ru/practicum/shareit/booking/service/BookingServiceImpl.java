@@ -4,11 +4,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoRequest;
+import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.storage.BookingRepository;
+import ru.practicum.shareit.exception.BookingValidException;
 import ru.practicum.shareit.exception.UserItemException;
+import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -19,20 +28,58 @@ import java.util.Optional;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
+    private final UserService userService;
+    private final ItemService itemService;
 
-    public BookingServiceImpl(BookingRepository bookingRepository) {
+    public BookingServiceImpl(BookingRepository bookingRepository, UserService userService, ItemService itemService) {
         this.bookingRepository = bookingRepository;
+        this.userService = userService;
+        this.itemService = itemService;
+    }
+
+    /*@Override
+    public Optional<BookingDto> createRequest(Integer userId, BookingDto bookingDto) {
+        int itemId = bookingDto.getItemId();
+        try {
+            User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+            Item item = ItemMapper.toItem(user, itemService.getItemById(itemId).get());
+            bookingDto.setStatus(Status.WAITING);
+            return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking
+                    (item, user, bookingDto))));
+        } catch (EntityNotFoundException ex) {
+            log.error("Пользователь с ID {} не был зарегестрирован", userId);
+            throw new NotFoundException("Пользователь с таким ID не был найден");
+        }
+        catch (Throwable ex1) {
+            log.error("Вещь с ID {} не был найдена", itemId);
+            throw new BookingValidException("Вещь с таким ID не была найдена");
+        }
+    }*/
+
+    @Override
+    public Optional<BookingDtoResponse> createRequest(Integer userId, BookingDtoRequest bookingDtoRequest) {
+        dateTimeValid(bookingDtoRequest.getStart(), bookingDtoRequest.getEnd());
+        int itemId = bookingDtoRequest.getItemId();
+        User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+        Item item = ItemMapper.toItem(user, itemService.getItemById(itemId).get());
+        if (!item.getAvailable()) {
+            throw new BookingValidException("Вещь с таким ID не может быть сдана в аренду");
+        }
+        bookingDtoRequest.setStatus(Status.WAITING);
+        return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking
+                    (item, user, bookingDtoRequest))));
+        /*}
+        catch (Throwable ex) {
+            log.error("Вещь с ID {} не был найдена", itemId);
+            throw new BookingValidException("Вещь с таким ID не была найдена");
+        }*/
     }
 
     @Override
-    public Optional<BookingDto> createRequest(BookingDto bookingDto) {
-        bookingDto.setStatus(Status.WAITING);
-        return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking(bookingDto))));
-    }
-
-    @Override
-    public Optional<BookingDto> resposeToRequest(Integer userId, Integer bookingId, Boolean approved, BookingDto bookingDto) {
-        Booking booking = getUpdateBooking(bookingId, approved, BookingMapper.toBooking(bookingDto));
+    public Optional<BookingDtoResponse> responseToRequest(Integer userId, Integer bookingId, Boolean approved, BookingDtoRequest bookingDtoRequest) {
+        User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+        Item item = ItemMapper.toItem(user, itemService.getItemById(bookingDtoRequest.getItemId()).get());
+        Booking booking = getUpdateBooking(bookingId, approved, BookingMapper.toBooking(item, user, bookingDtoRequest));
         if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
@@ -40,7 +87,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Optional<BookingDto> getBookingById(Integer userId, Integer bookingId) {
+    public Optional<BookingDtoResponse> getBookingById(Integer userId, Integer bookingId) {
         Booking booking = bookingRepository.getById(bookingId);
         if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
@@ -52,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingByBookerId(Integer bookerId, Status state) {
+    public List<BookingDtoResponse> getAllBookingByBookerId(Integer bookerId, Status state) {
         return toListBookingDto(bookingRepository.findAllByBookerId(bookerId));
     }
 
@@ -61,12 +108,12 @@ public class BookingServiceImpl implements BookingService {
         return toListBookingDto(bookingRepository.findAllByOwnerId(ownerId));
     }*/
 
-    private List<BookingDto> toListBookingDto(List<Booking> bookingList) {
-        List<BookingDto> bookingDtoList = new ArrayList<>();
+    private List<BookingDtoResponse> toListBookingDto(List<Booking> bookingList) {
+        List<BookingDtoResponse> bookingDtoResponseList = new ArrayList<>();
         for (Booking booking : bookingList) {
-            bookingDtoList.add(BookingMapper.toBookingDto(booking));
+            bookingDtoResponseList.add(BookingMapper.toBookingDto(booking));
         }
-        return bookingDtoList;
+        return bookingDtoResponseList;
     }
 
     private Booking getUpdateBooking (Integer bookingId, Boolean approved, Booking bookingUpdate) {
@@ -77,5 +124,11 @@ public class BookingServiceImpl implements BookingService {
         booking.setBooker(bookingUpdate.getBooker() != null ? bookingUpdate.getBooker() : booking.getBooker());
         booking.setStatus(approved ? Status.APPROVED : Status.REJECTED);
         return booking;
+    }
+
+    private void dateTimeValid(LocalDateTime start, LocalDateTime end) {
+        if (end.isBefore(start) || end.equals(start)) {
+            throw new BookingValidException("Время окончания бронирования не может быть равно(или быть раньше)дате(-ы) начала");
+        }
     }
 }
