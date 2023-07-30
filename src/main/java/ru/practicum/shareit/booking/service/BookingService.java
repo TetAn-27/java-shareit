@@ -11,7 +11,7 @@ public interface BookingService {
 
     Optional<BookingDtoResponse> createRequest(Integer userId, BookingDtoRequest bookingDtoRequest);
 
-    Optional<BookingDtoResponse> responseToRequest(Integer userId, Integer bookingId, Boolean approved, BookingDtoRequest bookingDtoRequest);
+    Optional<BookingDtoResponse> responseToRequest(Integer userId, Integer bookingId, Boolean approved);
 
     Optional<BookingDtoResponse> getBookingById(Integer userId, Integer bookingId);
 

@@ -27,9 +27,8 @@ public class BookingController {
     @PatchMapping("/{bookingId}") //PATCH /bookings/{bookingId}?approved={approved}
     public BookingDtoResponse responseToRequest(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                                @PathVariable("bookingId") Integer bookingId,
-                                               @RequestParam(value = "approved") Boolean approved,
-                                               @RequestBody BookingDtoRequest bookingDtoRequest) {
-        return bookingService.responseToRequest(userId, bookingId, approved, bookingDtoRequest).get();
+                                               @RequestParam(value = "approved") Boolean approved) {
+        return bookingService.responseToRequest(userId, bookingId, approved).get();
     }
 
     @GetMapping("/{bookingId}") //GET /bookings/{bookingId}

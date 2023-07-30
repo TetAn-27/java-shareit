@@ -37,25 +37,6 @@ public class BookingServiceImpl implements BookingService {
         this.itemService = itemService;
     }
 
-    /*@Override
-    public Optional<BookingDto> createRequest(Integer userId, BookingDto bookingDto) {
-        int itemId = bookingDto.getItemId();
-        try {
-            User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
-            Item item = ItemMapper.toItem(user, itemService.getItemById(itemId).get());
-            bookingDto.setStatus(Status.WAITING);
-            return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking
-                    (item, user, bookingDto))));
-        } catch (EntityNotFoundException ex) {
-            log.error("Пользователь с ID {} не был зарегестрирован", userId);
-            throw new NotFoundException("Пользователь с таким ID не был найден");
-        }
-        catch (Throwable ex1) {
-            log.error("Вещь с ID {} не был найдена", itemId);
-            throw new BookingValidException("Вещь с таким ID не была найдена");
-        }
-    }*/
-
     @Override
     public Optional<BookingDtoResponse> createRequest(Integer userId, BookingDtoRequest bookingDtoRequest) {
         dateTimeValid(bookingDtoRequest.getStart(), bookingDtoRequest.getEnd());
@@ -68,18 +49,13 @@ public class BookingServiceImpl implements BookingService {
         bookingDtoRequest.setStatus(Status.WAITING);
         return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking
                     (item, user, bookingDtoRequest))));
-        /*}
-        catch (Throwable ex) {
-            log.error("Вещь с ID {} не был найдена", itemId);
-            throw new BookingValidException("Вещь с таким ID не была найдена");
-        }*/
     }
 
     @Override
-    public Optional<BookingDtoResponse> responseToRequest(Integer userId, Integer bookingId, Boolean approved, BookingDtoRequest bookingDtoRequest) {
-        User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
-        Item item = ItemMapper.toItem(user, itemService.getItemById(bookingDtoRequest.getItemId()).get());
-        Booking booking = getUpdateBooking(bookingId, approved, BookingMapper.toBooking(item, user, bookingDtoRequest));
+    public Optional<BookingDtoResponse> responseToRequest(Integer userId, Integer bookingId, Boolean approved) {
+        Booking booking = getUpdateBooking(bookingId, approved);
+        //User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+        //Item item = ItemMapper.toItem(user, itemService.getItemById(booking.getItem().getId()).get());
         if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
@@ -116,12 +92,18 @@ public class BookingServiceImpl implements BookingService {
         return bookingDtoResponseList;
     }
 
-    private Booking getUpdateBooking (Integer bookingId, Boolean approved, Booking bookingUpdate) {
+    /*private Booking getUpdateBooking (Integer bookingId, Boolean approved, Booking bookingUpdate) {
         Booking booking = bookingRepository.getById(bookingId);
         booking.setStart(bookingUpdate.getStart() != null ? bookingUpdate.getStart() : booking.getStart());
         booking.setEnd(bookingUpdate.getEnd() != null ? bookingUpdate.getEnd()  : booking.getEnd() );
         booking.setItem(bookingUpdate.getItem() != null ? bookingUpdate.getItem() : booking.getItem());
         booking.setBooker(bookingUpdate.getBooker() != null ? bookingUpdate.getBooker() : booking.getBooker());
+        booking.setStatus(approved ? Status.APPROVED : Status.REJECTED);
+        return booking;
+    }*/
+
+    private Booking getUpdateBooking (Integer bookingId, Boolean approved) {
+        Booking booking = bookingRepository.getById(bookingId);
         booking.setStatus(approved ? Status.APPROVED : Status.REJECTED);
         return booking;
     }
