@@ -9,6 +9,7 @@ import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exception.BookingValidException;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UserItemException;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -17,11 +18,10 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -65,24 +65,28 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Optional<BookingDtoResponse> getBookingById(Integer userId, Integer bookingId) {
         Booking booking = bookingRepository.getById(bookingId);
-        if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
-            throw new UserItemException("Вы не являетесь владельцем данной вещи");
-        }
-        if (!Objects.equals(booking.getBooker().getId(), userId)) {
-            throw new UserItemException("Вы не являетесь автором бронирования данной вещи");
+        boolean isOwner = !Objects.equals(booking.getItem().getOwner().getId(), userId);
+        boolean isBooker = !Objects.equals(booking.getBooker().getId(), userId);
+        if (isOwner && isBooker) {
+            throw new UserItemException("Вы не имеете доступа к просмортру информации о данной вещи");
         }
         return Optional.of(BookingMapper.toBookingDto(booking));
     }
 
     @Override
-    public List<BookingDtoResponse> getAllBookingByBookerId(Integer bookerId, Status state) {
-        return toListBookingDto(bookingRepository.findAllByBookerId(bookerId));
+    public List<BookingDtoResponse> getAllBookingByBookerId(Integer bookerId, String state) {
+        try {
+            return toListBookingDto(getListAccordingState(bookingRepository.findAllByBookerId(bookerId), state));
+        } catch (EntityNotFoundException ex) {
+            log.error("Предмет с ID {} не был найден", bookerId);
+            throw new NotFoundException("Предмет с таким ID не был найден");
+        }
     }
 
-    /*@Override
-    public List<BookingDto> getAllBookingByOwnerId(Integer ownerId, Status state) {
-        return toListBookingDto(bookingRepository.findAllByOwnerId(ownerId));
-    }*/
+    @Override
+    public List<BookingDtoResponse> getAllBookingByOwnerId(Integer ownerId, String state) {
+        return toListBookingDto(getListAccordingState(bookingRepository.findAllByItemOwnerId(ownerId), state));
+    }
 
     private List<BookingDtoResponse> toListBookingDto(List<Booking> bookingList) {
         List<BookingDtoResponse> bookingDtoResponseList = new ArrayList<>();
@@ -92,15 +96,49 @@ public class BookingServiceImpl implements BookingService {
         return bookingDtoResponseList;
     }
 
-    /*private Booking getUpdateBooking (Integer bookingId, Boolean approved, Booking bookingUpdate) {
-        Booking booking = bookingRepository.getById(bookingId);
-        booking.setStart(bookingUpdate.getStart() != null ? bookingUpdate.getStart() : booking.getStart());
-        booking.setEnd(bookingUpdate.getEnd() != null ? bookingUpdate.getEnd()  : booking.getEnd() );
-        booking.setItem(bookingUpdate.getItem() != null ? bookingUpdate.getItem() : booking.getItem());
-        booking.setBooker(bookingUpdate.getBooker() != null ? bookingUpdate.getBooker() : booking.getBooker());
-        booking.setStatus(approved ? Status.APPROVED : Status.REJECTED);
-        return booking;
-    }*/
+    private List<Booking> getListAccordingState(List<Booking> bookingList, String state) {
+        switch (state) {
+            case "ALL":
+                return bookingList.stream()
+                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .collect(Collectors.toList());
+            case "CURRENT":
+                return bookingList.stream()
+                        .filter(i -> i.getStatus().equals(Status.APPROVED)
+                                && i.getStart().equals(LocalDateTime.now())
+                                || i.getStart().isBefore(LocalDateTime.now())
+                                && i.getEnd().equals(LocalDateTime.now())
+                                || i.getEnd().isAfter(LocalDateTime.now()))
+                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .collect(Collectors.toList());
+            case "PAST":
+                return bookingList.stream()
+                        .filter(i -> i.getStatus().equals(Status.APPROVED)
+                                && i.getStart().isAfter(LocalDateTime.now())
+                                && i.getEnd().isAfter(LocalDateTime.now()))
+                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .collect(Collectors.toList());
+            case "FUTURE":
+                return bookingList.stream()
+                        .filter(i -> i.getStatus().equals(Status.APPROVED)
+                                && i.getStart().isBefore(LocalDateTime.now())
+                                && i.getEnd().isBefore(LocalDateTime.now()))
+                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .collect(Collectors.toList());
+            case "WAITING":
+                return bookingList.stream()
+                        .filter(i -> i.getStatus().equals(Status.WAITING))
+                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .collect(Collectors.toList());
+            case "REJECTED":
+                return bookingList.stream()
+                        .filter(i -> i.getStatus().equals(Status.REJECTED))
+                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .collect(Collectors.toList());
+            default:
+                throw new BookingValidException("Был указан неверный параметр фильтрации");
+        }
+    }
 
     private Booking getUpdateBooking (Integer bookingId, Boolean approved) {
         Booking booking = bookingRepository.getById(bookingId);
