@@ -43,10 +43,10 @@ public class BookingController {
         return bookingService.getAllBookingByBookerId(userId, state);
     }
 
-    @GetMapping("/owner") //GET /bookings/owner?state={state}
+   /* @GetMapping("/owner") //GET /bookings/owner?state={state}
     public List<BookingDto> getAllBookingByOwnerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                              @RequestParam(value = "state", defaultValue = "ALL", required = false)
                                               Status state) {
         return bookingService.getAllBookingByOwnerId(userId, state);
-    }
+    }*/
 }

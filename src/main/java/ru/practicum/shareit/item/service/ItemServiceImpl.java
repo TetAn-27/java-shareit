@@ -35,8 +35,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Optional<ItemDto> create(int userId, ItemDto itemDto) {
-        User user = new User();
-        user = UserMapper.toUser(userService.getUserById(userId).get());
+        User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
         return Optional.of(ItemMapper.toItemDto(itemRepository.save(
                 ItemMapper.toItem(user, itemDto))));
     }

@@ -56,10 +56,10 @@ public class BookingServiceImpl implements BookingService {
         return toListBookingDto(bookingRepository.findAllByBookerId(bookerId));
     }
 
-    @Override
+    /*@Override
     public List<BookingDto> getAllBookingByOwnerId(Integer ownerId, Status state) {
         return toListBookingDto(bookingRepository.findAllByOwnerId(ownerId));
-    }
+    }*/
 
     private List<BookingDto> toListBookingDto(List<Booking> bookingList) {
         List<BookingDto> bookingDtoList = new ArrayList<>();
