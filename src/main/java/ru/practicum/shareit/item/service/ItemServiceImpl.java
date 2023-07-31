@@ -58,6 +58,7 @@ public class ItemServiceImpl implements ItemService {
             throw new NotFoundException("Предмет с таким ID не был найден");
         }
     }
+
     @Override
     public List<ItemDto> getAllUserItems(int userId) {
         return toListItemDto(itemRepository.findAllByOwnerId(userId));
@@ -72,6 +73,16 @@ public class ItemServiceImpl implements ItemService {
                 text.toLowerCase(), text.toLowerCase())).stream()
                 .filter(i -> i.getAvailable())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Item getById(int itemId) {
+        try {
+            return itemRepository.getById(itemId);
+        } catch (EntityNotFoundException ex) {
+            log.error("Предмет с ID {} не был найден", itemId);
+            throw new NotFoundException("Предмет с таким ID не был найден");
+        }
     }
 
     private List<ItemDto> toListItemDto(List<Item> itemList) {
