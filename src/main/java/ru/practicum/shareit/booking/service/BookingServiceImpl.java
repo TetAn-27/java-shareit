@@ -26,6 +26,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.booking.dto.BookingMapper.toBookingDto;
+
 @Slf4j
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -74,7 +76,7 @@ public class BookingServiceImpl implements BookingService {
         }
         bookingDtoRequest.setStatus(Status.WAITING);
         //item.setAvailable(false);
-        return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking
+        return Optional.of(toBookingDto(bookingRepository.save(BookingMapper.toBooking
                 (item, user, bookingDtoRequest))));
     }
 
@@ -84,7 +86,7 @@ public class BookingServiceImpl implements BookingService {
         if (!Objects.equals(booking.getItem().getOwner().getId(), userId)) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
-        return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(booking)));
+        return Optional.of(toBookingDto(bookingRepository.save(booking)));
     }
 
     @Override
@@ -97,7 +99,7 @@ public class BookingServiceImpl implements BookingService {
             throw new UserItemException("Вы не имеете доступа к просмортру информации о данной вещи");
         }
 
-            return Optional.of(BookingMapper.toBookingDto(booking));
+            return Optional.of(toBookingDto(booking));
         }
         catch (EntityNotFoundException ex) {
             log.error("Предмет с ID {} не был найден", bookingId);
@@ -117,10 +119,30 @@ public class BookingServiceImpl implements BookingService {
         return toListBookingDto(getListAccordingState(bookingRepository.findAllByItemOwnerId(ownerId), state));
     }
 
+    /*@Override
+    public List<Booking> getAllBookingByItemId(Integer itemId) {
+        return bookingRepository.findAllByItemId(itemId);
+    }*/
+
+    /*@Override
+    public BookingDtoResponse getItemLastBooking(Integer itemId) {
+        return BookingMapper.toBookingDto(
+                bookingRepository.findFirst1ByItemIdAndStartLessThanEqualAndStatusOrderByStartDesc(
+                        itemId, LocalDateTime.now(), Status.APPROVED));
+    }
+
+    @Override
+    public BookingDtoResponse getItemNextBooking(Integer itemId) {
+        return BookingMapper.toBookingDto(
+                bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
+                        itemId, LocalDateTime.now(), Status.APPROVED));
+    }*/
+
+
     private List<BookingDtoResponse> toListBookingDto(List<Booking> bookingList) {
         List<BookingDtoResponse> bookingDtoResponseList = new ArrayList<>();
         for (Booking booking : bookingList) {
-            bookingDtoResponseList.add(BookingMapper.toBookingDto(booking));
+            bookingDtoResponseList.add(toBookingDto(booking));
         }
         return bookingDtoResponseList;
     }

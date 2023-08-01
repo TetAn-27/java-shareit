@@ -2,6 +2,7 @@ package ru.practicum.shareit.item;
 
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemDtoForGet;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
@@ -30,8 +31,9 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable("itemId") Integer itemId) {
-        return itemService.getItemById(itemId).get();
+    public ItemDtoForGet getItemById(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                     @PathVariable("itemId") Integer itemId) {
+        return itemService.getItemById(userId, itemId).get();
     }
 
     @GetMapping()

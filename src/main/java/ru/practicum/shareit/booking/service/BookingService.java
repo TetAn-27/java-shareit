@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 
@@ -17,4 +18,7 @@ public interface BookingService {
     List<BookingDtoResponse> getAllBookingByBookerId(Integer userId, String state);
 
     List<BookingDtoResponse> getAllBookingByOwnerId(Integer userId, String state);
+    //List<Booking> getAllBookingByItemId(Integer itemId);
+    //BookingDtoResponse getItemNextBooking(Integer itemId);
+    //BookingDtoResponse getItemLastBooking(Integer itemId);
 }
