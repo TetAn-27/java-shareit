@@ -20,6 +20,6 @@ public class BookingDtoRequest {
     private LocalDateTime end;
     @NotNull(message = "Значение id вещи не может быть пустым")
     private Integer itemId;
-    private Integer booker;
+    private Integer bookerId;
     private Status status;
 }

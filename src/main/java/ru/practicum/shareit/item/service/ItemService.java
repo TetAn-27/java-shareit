@@ -15,7 +15,7 @@ public interface ItemService {
 
     Optional<ItemDtoForGet> getItemById(int userId, int itemId);
 
-    List<ItemDto> getAllUserItems(int userId);
+    List<ItemDtoForGet> getAllUserItems(int userId);
 
     List<ItemDto> searchForItems(String text);
 

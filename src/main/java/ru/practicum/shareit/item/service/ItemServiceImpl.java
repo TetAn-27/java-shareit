@@ -3,7 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Status;
-import ru.practicum.shareit.booking.dto.BookingDtoResponse;
+import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -62,11 +62,11 @@ public class ItemServiceImpl implements ItemService {
     public Optional<ItemDtoForGet> getItemById(int userId, int itemId) {
         try {
             Item item = itemRepository.getById(itemId);
-            BookingDtoResponse nextBooking =
+            BookingDtoRequest nextBooking =
                     item.getOwner().getId() == userId ? getItemNextBooking(itemId) : null;
-            BookingDtoResponse lastBooking =
+            BookingDtoRequest lastBooking =
                     item.getOwner().getId() == userId ? getItemLastBooking(itemId) : null;
-            return Optional.of(ItemMapper.toItemDtoForGet(item, nextBooking, lastBooking));
+            return Optional.of(ItemMapper.toItemDtoForGet(item, lastBooking, nextBooking));
         } catch (EntityNotFoundException ex) {
             log.error("Предмет с ID {} не был найден", itemId);
             throw new NotFoundException("Предмет с таким ID не был найден");
@@ -74,8 +74,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getAllUserItems(int userId) {
-        return toListItemDto(itemRepository.findAllByOwnerId(userId));
+    public List<ItemDtoForGet> getAllUserItems(int userId) {
+        List<Item> items = itemRepository.findAllByOwnerId(userId);
+        List<ItemDtoForGet> itemsDto = new ArrayList<>();
+        for (Item item : items) {
+            ItemDtoForGet itemDto = ItemMapper.toItemDtoForGet(item, getItemLastBooking(item.getId()),
+                    getItemNextBooking(item.getId()));
+            itemsDto.add(itemDto);
+        }
+        return itemsDto;
     }
 
     @Override
@@ -116,24 +123,23 @@ public class ItemServiceImpl implements ItemService {
         return item;
     }
 
-    public BookingDtoResponse getItemLastBooking(Integer itemId) {
-        return BookingMapper.toBookingDto(
+    private BookingDtoRequest getItemLastBooking(Integer itemId) {
+        try {
+            return BookingMapper.toBookingDtoRequest(
                 bookingRepository.findFirst1ByItemIdAndStartLessThanEqualAndStatusOrderByStartDesc(
                         itemId, LocalDateTime.now(), Status.APPROVED));
+        } catch (NullPointerException ex) {
+            return null;
+        }
     }
 
-
-    public BookingDtoResponse getItemNextBooking(Integer itemId) {
-        return BookingMapper.toBookingDto(
-                bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
-                        itemId, LocalDateTime.now(), Status.APPROVED));
+    private BookingDtoRequest getItemNextBooking(Integer itemId) {
+        try {
+            return BookingMapper.toBookingDtoRequest(
+                    bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
+                            itemId, LocalDateTime.now(), Status.APPROVED));
+        } catch (NullPointerException ex) {
+            return null;
+        }
     }
-
-    /*private Booking[] getNextLastBooking(Integer itemId) {
-        bookingService.getAllBookingByItemId(itemId).stream()
-                .filter(i -> i.getStatus().equals(Status.APPROVED))
-                .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
-                .collect(Collectors.toList());
-        Booking[] bookings = new Booking[2];
-    }*/
 }

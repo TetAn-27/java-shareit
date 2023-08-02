@@ -2,8 +2,7 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.booking.Booking;
-import ru.practicum.shareit.booking.dto.BookingDtoResponse;
+import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -23,6 +22,6 @@ public class ItemDtoForGet {
     @NotNull
     private Boolean available;
     private Integer request;
-    private BookingDtoResponse nextBooking;
-    private BookingDtoResponse lastBooking;
+    private BookingDtoRequest nextBooking;
+    private BookingDtoRequest lastBooking;
 }

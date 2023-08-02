@@ -37,7 +37,7 @@ public class ItemController {
     }
 
     @GetMapping()
-    public List<ItemDto> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public List<ItemDtoForGet> getAllUserItems(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemService.getAllUserItems(userId);
     }
 

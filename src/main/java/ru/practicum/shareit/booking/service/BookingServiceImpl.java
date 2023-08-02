@@ -12,8 +12,6 @@ import ru.practicum.shareit.exception.BookingValidException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.StateException;
 import ru.practicum.shareit.exception.UserItemException;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.User;
@@ -21,7 +19,6 @@ import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,32 +39,13 @@ public class BookingServiceImpl implements BookingService {
         this.itemService = itemService;
     }
 
-    /*@Override
-    public Optional<BookingDtoResponse> createRequest(Integer userId, BookingDtoRequest bookingDtoRequest) {
-        dateTimeValid(bookingDtoRequest.getStart(), bookingDtoRequest.getEnd());
-        int itemId = bookingDtoRequest.getItemId();
-        User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
-        ItemDto itemDto = itemService.getItemById(itemId).get();
-        Item item = ItemMapper.toItem(itemDto.get, itemService.getItemById(itemId).get());
-        if (!item.getAvailable()) {
-            throw new BookingValidException("Вещь с таким ID не может быть сдана в аренду");
-        }
-        if (!userId.equals(item.getOwner().getId())) {
-            throw new NotFoundException("Вещь с таким ID не может быть сдана в аренду");
-        }
-        bookingDtoRequest.setStatus(Status.WAITING);
-        //item.setAvailable(false);
-        return Optional.of(BookingMapper.toBookingDto(bookingRepository.save(BookingMapper.toBooking
-                    (item, user, bookingDtoRequest))));
-    }*/
-
     @Override
     public Optional<BookingDtoResponse> createRequest(Integer userId, BookingDtoRequest bookingDtoRequest) {
         dateTimeValid(bookingDtoRequest.getStart(), bookingDtoRequest.getEnd());
         int itemId = bookingDtoRequest.getItemId();
         User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
-        //ItemDto itemDto = itemService.getItemById(itemId).get();
         Item item = itemService.getById(itemId);
+        itemService.getItemById(userId, itemId);
         if (!item.getAvailable()) {
             throw new BookingValidException("Вещь с таким ID не может быть сдана в аренду");
         }
@@ -75,7 +53,6 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Вы не можете взять в аренду свою вещь");
         }
         bookingDtoRequest.setStatus(Status.WAITING);
-        //item.setAvailable(false);
         return Optional.of(toBookingDto(bookingRepository.save(BookingMapper.toBooking
                 (item, user, bookingDtoRequest))));
     }
@@ -118,26 +95,6 @@ public class BookingServiceImpl implements BookingService {
         userService.getUserById(ownerId);
         return toListBookingDto(getListAccordingState(bookingRepository.findAllByItemOwnerId(ownerId), state));
     }
-
-    /*@Override
-    public List<Booking> getAllBookingByItemId(Integer itemId) {
-        return bookingRepository.findAllByItemId(itemId);
-    }*/
-
-    /*@Override
-    public BookingDtoResponse getItemLastBooking(Integer itemId) {
-        return BookingMapper.toBookingDto(
-                bookingRepository.findFirst1ByItemIdAndStartLessThanEqualAndStatusOrderByStartDesc(
-                        itemId, LocalDateTime.now(), Status.APPROVED));
-    }
-
-    @Override
-    public BookingDtoResponse getItemNextBooking(Integer itemId) {
-        return BookingMapper.toBookingDto(
-                bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
-                        itemId, LocalDateTime.now(), Status.APPROVED));
-    }*/
-
 
     private List<BookingDtoResponse> toListBookingDto(List<Booking> bookingList) {
         List<BookingDtoResponse> bookingDtoResponseList = new ArrayList<>();
