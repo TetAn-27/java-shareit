@@ -2,16 +2,17 @@ package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UserItemException;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoForGet;
-import ru.practicum.shareit.item.dto.ItemMapper;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
@@ -33,13 +34,15 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final BookingRepository bookingRepository;
+    private final CommentRepository commentRepository;
 
     public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, UserService userService,
-                           BookingRepository bookingRepository) {
+                           BookingRepository bookingRepository, CommentRepository commentRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
+        this.commentRepository = commentRepository;
     }
 
     @Override
@@ -66,7 +69,7 @@ public class ItemServiceImpl implements ItemService {
                     item.getOwner().getId() == userId ? getItemNextBooking(itemId) : null;
             BookingDtoRequest lastBooking =
                     item.getOwner().getId() == userId ? getItemLastBooking(itemId) : null;
-            return Optional.of(ItemMapper.toItemDtoForGet(item, lastBooking, nextBooking));
+            return Optional.of(ItemMapper.toItemDtoForGet(item, lastBooking, nextBooking, getListComment(itemId)));
         } catch (EntityNotFoundException ex) {
             log.error("Предмет с ID {} не был найден", itemId);
             throw new NotFoundException("Предмет с таким ID не был найден");
@@ -78,8 +81,9 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items = itemRepository.findAllByOwnerId(userId);
         List<ItemDtoForGet> itemsDto = new ArrayList<>();
         for (Item item : items) {
-            ItemDtoForGet itemDto = ItemMapper.toItemDtoForGet(item, getItemLastBooking(item.getId()),
-                    getItemNextBooking(item.getId()));
+            int itemId = item.getId();
+            ItemDtoForGet itemDto = ItemMapper.toItemDtoForGet(item, getItemLastBooking(itemId),
+                    getItemNextBooking(itemId), getListComment(itemId));
             itemsDto.add(itemDto);
         }
         return itemsDto;
@@ -106,12 +110,39 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    @Override
+    public Optional<CommentDto> addComment(Integer userId, Integer itemId, CommentDto commentDto) {
+        Booking booking;
+        try {
+            booking = bookingRepository.findFirst1ByItemIdAndBookerId(itemId, userId);
+        } catch (NullPointerException ex) {
+            log.error("");
+            throw new NotFoundException("");
+        }
+
+        Comment comment = CommentMapper.toComment(commentDto, getById(itemId),
+                UserMapper.toUser(userId, userService.getUserById(userId).get()));
+        if (booking.getEnd().isAfter(comment.getCreated())) {
+            log.error("");
+            throw new NotFoundException("");
+        }
+        return Optional.of(CommentMapper.toCommentDto(commentRepository.save(comment)));
+    }
+
     private List<ItemDto> toListItemDto(List<Item> itemList) {
         List<ItemDto> itemDtoList = new ArrayList<>();
         for (Item item : itemList) {
             itemDtoList.add(ItemMapper.toItemDto(item));
         }
         return itemDtoList;
+    }
+
+    private List<Comment> getListComment(Integer itemId) {
+        try {
+            return commentRepository.findAllByItemId(itemId);
+        } catch (NullPointerException ex) {
+            return null;
+        }
     }
 
     private Item getUpdateItem (Integer itemId, Item itemUpdate) {

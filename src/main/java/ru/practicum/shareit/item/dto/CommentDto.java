@@ -1,4 +1,4 @@
-package ru.practicum.shareit.booking.dto;
+package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,9 +14,9 @@ public class CommentDto {
 
     private Integer id;
     @NotNull
-    String text;
+    private String text;
     @NotNull
-    Item item;
-    User author;
+    private Integer itemId;
+    private Integer authorId;
     private LocalDateTime created;
 }

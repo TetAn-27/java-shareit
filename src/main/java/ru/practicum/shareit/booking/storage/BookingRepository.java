@@ -25,4 +25,6 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     Booking findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
             Integer itemId, LocalDateTime now, Status status);
+
+    Booking findFirst1ByItemIdAndBookerId(int itemId, int bookerId);
 }
