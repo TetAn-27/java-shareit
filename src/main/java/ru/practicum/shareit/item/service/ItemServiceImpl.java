@@ -146,6 +146,7 @@ public class ItemServiceImpl implements ItemService {
             }
             return commentDtoList;
         } catch (NullPointerException ex) {
+            log.info("Комментарии к данной вещи отсутствуют");
             return null;
         }
     }
