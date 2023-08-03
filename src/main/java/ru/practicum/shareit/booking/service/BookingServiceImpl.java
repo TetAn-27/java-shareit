@@ -53,8 +53,7 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Вы не можете взять в аренду свою вещь");
         }
         bookingDtoRequest.setStatus(Status.WAITING);
-        return Optional.of(toBookingDto(bookingRepository.save(BookingMapper.toBooking
-                (item, user, bookingDtoRequest))));
+        return Optional.of(toBookingDto(bookingRepository.save(BookingMapper.toBooking(item, user, bookingDtoRequest))));
     }
 
     @Override
@@ -75,10 +74,8 @@ public class BookingServiceImpl implements BookingService {
         if (isOwner && isBooker) {
             throw new UserItemException("Вы не имеете доступа к просмортру информации о данной вещи");
         }
-
             return Optional.of(toBookingDto(booking));
-        }
-        catch (EntityNotFoundException ex) {
+        } catch (EntityNotFoundException ex) {
             log.error("Предмет с ID {} не был найден", bookingId);
             throw new NotFoundException("Предмет с таким ID не был найден");
         }
@@ -112,7 +109,7 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
             case "CURRENT":
                 return bookingList.stream()
-                        .filter(i -> !i.getStatus().equals(Status.CANCELED)
+                        .filter(i->!i.getStatus().equals(Status.CANCELED)
                                 && (i.getStart().equals(LocalDateTime.now())
                                 || i.getStart().isBefore(LocalDateTime.now()))
                                 && (i.getEnd().equals(LocalDateTime.now())
@@ -121,14 +118,14 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
             case "PAST":
                 return bookingList.stream()
-                        .filter(i -> i.getStatus().equals(Status.APPROVED)
+                        .filter(i->i.getStatus().equals(Status.APPROVED)
                                 && i.getStart().isBefore(LocalDateTime.now())
                                 && i.getEnd().isBefore(LocalDateTime.now()))
                         .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "FUTURE":
                 return bookingList.stream()
-                        .filter(i -> i.getStatus().equals(Status.APPROVED)
+                        .filter(i->i.getStatus().equals(Status.APPROVED)
                                 || i.getStatus().equals(Status.WAITING)
                                 && i.getStart().isAfter(LocalDateTime.now())
                                 && i.getEnd().isAfter(LocalDateTime.now()))
@@ -136,12 +133,12 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
             case "WAITING":
                 return bookingList.stream()
-                        .filter(i -> i.getStatus().equals(Status.WAITING))
+                        .filter(i->i.getStatus().equals(Status.WAITING))
                         .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "REJECTED":
                 return bookingList.stream()
-                        .filter(i -> i.getStatus().equals(Status.REJECTED))
+                        .filter(i->i.getStatus().equals(Status.REJECTED))
                         .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             default:

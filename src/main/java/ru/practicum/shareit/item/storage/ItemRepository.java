@@ -9,7 +9,7 @@ public interface ItemRepository extends JpaRepository<Item, Integer> {
 
     Item save(Item item);
 
-    Item getById(int Id);
+    Item getById(int id);
 
     List<Item> findAllByOwnerId(int userId);
 

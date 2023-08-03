@@ -21,5 +21,6 @@ public interface ItemService {
     List<ItemDto> searchForItems(String text);
 
     Item getById(int itemId);
+
     Optional<CommentDto> addComment(Integer userId, Integer itemId, CommentDto commentDto);
 }

@@ -150,7 +150,7 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private Item getUpdateItem (Integer itemId, Item itemUpdate) {
+    private Item getUpdateItem(Integer itemId, Item itemUpdate) {
         Item item = itemRepository.getById(itemId);
         item.setName(itemUpdate.getName() != null ? itemUpdate.getName() : item.getName());
         item.setDescription(itemUpdate.getDescription() != null ? itemUpdate.getDescription() : item.getDescription());
