@@ -105,11 +105,11 @@ public class BookingServiceImpl implements BookingService {
         switch (state) {
             case "ALL":
                 return bookingList.stream()
-                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "CURRENT":
                 return bookingList.stream()
-                        .filter(i->!i.getStatus().equals(Status.CANCELED)
+                        .filter(i -> !i.getStatus().equals(Status.CANCELED)
                                 && (i.getStart().equals(LocalDateTime.now())
                                 || i.getStart().isBefore(LocalDateTime.now()))
                                 && (i.getEnd().equals(LocalDateTime.now())
@@ -118,35 +118,35 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
             case "PAST":
                 return bookingList.stream()
-                        .filter(i->i.getStatus().equals(Status.APPROVED)
+                        .filter(i -> i.getStatus().equals(Status.APPROVED)
                                 && i.getStart().isBefore(LocalDateTime.now())
                                 && i.getEnd().isBefore(LocalDateTime.now()))
-                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "FUTURE":
                 return bookingList.stream()
-                        .filter(i->i.getStatus().equals(Status.APPROVED)
+                        .filter(i -> i.getStatus().equals(Status.APPROVED)
                                 || i.getStatus().equals(Status.WAITING)
                                 && i.getStart().isAfter(LocalDateTime.now())
                                 && i.getEnd().isAfter(LocalDateTime.now()))
-                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "WAITING":
                 return bookingList.stream()
-                        .filter(i->i.getStatus().equals(Status.WAITING))
-                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .filter(i -> i.getStatus().equals(Status.WAITING))
+                        .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "REJECTED":
                 return bookingList.stream()
-                        .filter(i->i.getStatus().equals(Status.REJECTED))
-                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .filter(i -> i.getStatus().equals(Status.REJECTED))
+                        .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             default:
                 throw new StateException("Был указан неверный параметр фильтрации");
         }
     }
 
-    private Booking getUpdateBooking (Integer bookingId, Boolean approved) {
+    private Booking getUpdateBooking(Integer bookingId, Boolean approved) {
         Booking booking = bookingRepository.getById(bookingId);
         if (!booking.getStatus().equals(Status.WAITING)) {
             throw new BookingValidException("Вы не можете поменять статус бронирования");
