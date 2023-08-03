@@ -114,7 +114,7 @@ public class BookingServiceImpl implements BookingService {
                                 || i.getStart().isBefore(LocalDateTime.now()))
                                 && (i.getEnd().equals(LocalDateTime.now())
                                 || i.getEnd().isAfter(LocalDateTime.now())))
-                        .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
+                        .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "PAST":
                 return bookingList.stream()
