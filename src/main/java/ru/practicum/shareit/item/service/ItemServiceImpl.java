@@ -6,6 +6,7 @@ import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingMapper;
+import ru.practicum.shareit.exception.BookingValidException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -116,15 +117,15 @@ public class ItemServiceImpl implements ItemService {
         try {
             booking = bookingRepository.findFirst1ByItemIdAndBookerId(itemId, userId);
         } catch (NullPointerException ex) {
-            log.error("");
-            throw new NotFoundException("");
+            log.error("К сожелению вы не можете оставить комментарий на эту вещь, так как вы не брали ее в аренду");
+            throw new NotFoundException("Ошибка владения вещи");
         }
-
-        Comment comment = CommentMapper.toComment(commentDto, getById(itemId),
+        Comment comment = CommentMapper.toComment(commentDto, itemRepository.getById(itemId),
                 UserMapper.toUser(userId, userService.getUserById(userId).get()));
-        if (booking.getEnd().isAfter(comment.getCreated())) {
-            log.error("");
-            throw new NotFoundException("");
+        if (booking.getEnd().isAfter(commentDto.getCreated())) {
+            log.error("Ваше пользование вещью еще не закончилось. Вы можете оставить комментарий после " +
+                    "того как закончится время бронирования");
+            throw new BookingValidException("Ошибка временного пользования");
         }
         return Optional.of(CommentMapper.toCommentDto(commentRepository.save(comment)));
     }
@@ -137,9 +138,13 @@ public class ItemServiceImpl implements ItemService {
         return itemDtoList;
     }
 
-    private List<Comment> getListComment(Integer itemId) {
+    private List<CommentDto> getListComment(Integer itemId) {
         try {
-            return commentRepository.findAllByItemId(itemId);
+            List<CommentDto> commentDtoList = new ArrayList<>();
+            for (Comment comment : commentRepository.findAllByItemId(itemId)) {
+                commentDtoList.add(CommentMapper.toCommentDto(comment));
+            }
+            return commentDtoList;
         } catch (NullPointerException ex) {
             return null;
         }

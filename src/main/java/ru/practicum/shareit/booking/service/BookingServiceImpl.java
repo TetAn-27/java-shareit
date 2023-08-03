@@ -112,11 +112,11 @@ public class BookingServiceImpl implements BookingService {
                         .collect(Collectors.toList());
             case "CURRENT":
                 return bookingList.stream()
-                        .filter(i -> i.getStatus().equals(Status.APPROVED)
-                                && i.getStart().equals(LocalDateTime.now())
-                                || i.getStart().isBefore(LocalDateTime.now())
-                                && i.getEnd().equals(LocalDateTime.now())
-                                || i.getEnd().isAfter(LocalDateTime.now()))
+                        .filter(i -> !i.getStatus().equals(Status.CANCELED)
+                                && (i.getStart().equals(LocalDateTime.now())
+                                || i.getStart().isBefore(LocalDateTime.now()))
+                                && (i.getEnd().equals(LocalDateTime.now())
+                                || i.getEnd().isAfter(LocalDateTime.now())))
                         .sorted((o1, o2)->o2.getStart().compareTo(o1.getStart()))
                         .collect(Collectors.toList());
             case "PAST":

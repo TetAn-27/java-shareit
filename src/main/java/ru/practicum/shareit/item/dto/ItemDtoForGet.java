@@ -3,7 +3,6 @@ package ru.practicum.shareit.item.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
-import ru.practicum.shareit.item.model.Comment;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -26,5 +25,5 @@ public class ItemDtoForGet {
     private Integer request;
     private BookingDtoRequest nextBooking;
     private BookingDtoRequest lastBooking;
-    private List<Comment> comments;
+    private List<CommentDto> comments;
 }
