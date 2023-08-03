@@ -165,6 +165,7 @@ public class ItemServiceImpl implements ItemService {
                 bookingRepository.findFirst1ByItemIdAndStartLessThanEqualAndStatusOrderByStartDesc(
                         itemId, LocalDateTime.now(), Status.APPROVED));
         } catch (NullPointerException ex) {
+            log.info("Вещь не забронирована");
             return null;
         }
     }
@@ -175,6 +176,7 @@ public class ItemServiceImpl implements ItemService {
                     bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
                             itemId, LocalDateTime.now(), Status.APPROVED));
         } catch (NullPointerException ex) {
+            log.info("Вещь не забронирована");
             return null;
         }
     }
