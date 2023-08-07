@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 @Data
-//@AllArgsConstructor
 public class CommentDto {
 
     private Integer id;

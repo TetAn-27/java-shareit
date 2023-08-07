@@ -117,15 +117,16 @@ public class ItemServiceImpl implements ItemService {
         try {
             booking = bookingRepository.findFirst1ByItemIdAndBookerId(itemId, userId);
         } catch (NullPointerException ex) {
-            log.error("К сожелению вы не можете оставить комментарий на эту вещь, так как вы не брали ее в аренду");
-            throw new NotFoundException("Ошибка владения вещи");
+            log.error("Ошибка владения вещи");
+            throw new NotFoundException("К сожелению, вы не можете оставить комментарий на эту вещь, " +
+                    "так как вы не брали ее в аренду");
         }
         Comment comment = CommentMapper.toComment(commentDto, itemRepository.getById(itemId),
                 UserMapper.toUser(userId, userService.getUserById(userId).get()));
         if (booking.getEnd().isAfter(commentDto.getCreated())) {
-            log.error("Ваше пользование вещью еще не закончилось. Вы можете оставить комментарий после " +
-                    "того как закончится время бронирования");
-            throw new BookingValidException("Ошибка временного пользования");
+            log.error("Ошибка временного пользования");
+            throw new BookingValidException("Ваше пользование вещью еще не закончилось. Вы можете оставить комментарий " +
+                    "после того как закончится время бронирования");
         }
         return Optional.of(CommentMapper.toCommentDto(commentRepository.save(comment)));
     }
@@ -146,7 +147,7 @@ public class ItemServiceImpl implements ItemService {
             }
             return commentDtoList;
         } catch (NullPointerException ex) {
-            log.info("Комментарии к данной вещи отсутствуют");
+            log.error("Комментарии к данной вещи отсутствуют");
             return null;
         }
     }
@@ -156,7 +157,7 @@ public class ItemServiceImpl implements ItemService {
         item.setName(itemUpdate.getName() != null ? itemUpdate.getName() : item.getName());
         item.setDescription(itemUpdate.getDescription() != null ? itemUpdate.getDescription() : item.getDescription());
         item.setAvailable(itemUpdate.getAvailable() != null ? itemUpdate.getAvailable() : item.getAvailable());
-        log.info("Предмет {} был обновлен", item.getName());
+        log.debug("Предмет {} был обновлен", item.getName());
         return item;
     }
 
@@ -166,7 +167,7 @@ public class ItemServiceImpl implements ItemService {
                 bookingRepository.findFirst1ByItemIdAndStartLessThanEqualAndStatusOrderByStartDesc(
                         itemId, LocalDateTime.now(), Status.APPROVED));
         } catch (NullPointerException ex) {
-            log.info("Вещь не забронирована");
+            log.error("Вещь не забронирована");
             return null;
         }
     }
@@ -177,7 +178,7 @@ public class ItemServiceImpl implements ItemService {
                     bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
                             itemId, LocalDateTime.now(), Status.APPROVED));
         } catch (NullPointerException ex) {
-            log.info("Вещь не забронирована");
+            log.error("Вещь не забронирована");
             return null;
         }
     }

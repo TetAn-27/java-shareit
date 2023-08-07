@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.getById(userId);
         user.setName(userUpdate.getName() != null ? userUpdate.getName() : user.getName());
         user.setEmail(userUpdate.getEmail() != null ? userUpdate.getEmail() : user.getEmail());
-        log.info("Пользователь {} был обновлен", user.getName());
+        log.debug("Пользователь {} был обновлен", user.getName());
         return user;
     }
 }
