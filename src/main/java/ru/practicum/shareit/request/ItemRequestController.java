@@ -2,6 +2,7 @@ package ru.practicum.shareit.request;
 
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.request.dto.ItemRequestDtoForGet;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
@@ -23,7 +24,7 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestDto> findAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
+    public List<ItemRequestDtoForGet> findAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemRequestService.findAll(userId);
     }
 
