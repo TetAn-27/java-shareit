@@ -23,4 +23,6 @@ public interface ItemService {
     Item getById(int itemId);
 
     Optional<CommentDto> addComment(Integer userId, Integer itemId, CommentDto commentDto);
+
+    List<ItemDto> findAllByRequest(int userId);
 }

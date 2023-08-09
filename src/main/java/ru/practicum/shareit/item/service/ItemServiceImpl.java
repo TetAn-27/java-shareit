@@ -131,6 +131,18 @@ public class ItemServiceImpl implements ItemService {
         return Optional.of(CommentMapper.toCommentDto(commentRepository.save(comment)));
     }
 
+    @Override
+    public List<ItemDto> findAllByRequest(int userId) {
+        List<Item> items = itemRepository.findAllByRequest(userId);
+        List<ItemDto> itemsDto = new ArrayList<>();
+        for (Item item : items) {
+            int itemId = item.getId();
+            ItemDto itemDto = ItemMapper.toItemDto(item);
+            itemsDto.add(itemDto);
+        }
+        return itemsDto;
+    }
+
     private List<ItemDto> toListItemDto(List<Item> itemList) {
         List<ItemDto> itemDtoList = new ArrayList<>();
         for (Item item : itemList) {

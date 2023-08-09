@@ -43,7 +43,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         List<ItemRequest> requests = itemRequestRepository.findAllByRequester(userId);
         List<ItemRequestDtoForGet> requestsDto = new ArrayList<>();
         for (ItemRequest itemRequest : requests) {
-            List<ItemDto> items = itemService.findAllByRequest;
+            List<ItemDto> items = itemService.findAllByRequest(userId);
             ItemRequestDtoForGet requestDto = ItemRequestMapper.toItemRequestDtoForGet(itemRequest, items);
             requestsDto.add(requestDto);
         }
