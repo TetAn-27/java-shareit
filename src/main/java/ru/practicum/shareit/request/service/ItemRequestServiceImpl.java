@@ -1,6 +1,10 @@
 package ru.practicum.shareit.request.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
@@ -16,6 +20,7 @@ import ru.practicum.shareit.user.service.UserService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -41,22 +46,51 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDtoForGet> findAll(Integer userId) {
         List<ItemRequest> requests = itemRequestRepository.findAllByRequester(userId);
-        List<ItemRequestDtoForGet> requestsDto = new ArrayList<>();
-        for (ItemRequest itemRequest : requests) {
+        return getListItemRequestDto(userId, requests);
+    }
+
+    @Override
+    public List<ItemRequestDtoForGet> getAllRequests(Integer userId, PageRequest pageRequesttt) {
+        /*Page<ItemRequest> page = itemRequestRepository.findAll(pageRequest);
+        return getListItemRequestDto(userId, page.getContent());*/
+        Sort sortById = Sort.by(Sort.Direction.ASC, "id");
+        Pageable page = PageRequest.of(0, 32, sortById);
+        do {
+            Page<ItemRequest> pageRequest = itemRequestRepository.findAll(page);
+            pageRequest.getContent().forEach(ItemRequest -> {
+            });
+            if(pageRequest.hasNext()){
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort()); // или для простоты -- userPage.nextOrLastPageable()
+            } else {
+                page = null;
+            }
+            return getListItemRequestDto(userId, pageRequest.getContent());
+        } while (page != null);
+
+    }
+
+    @Override
+    public Optional<ItemRequestDtoForGet> getById(Integer userId, Integer requestId) {
+        List<ItemDto> items = itemService.findAllByRequest(userId);
+        return Optional.of(ItemRequestMapper.toItemRequestDtoForGet(
+                itemRequestRepository.getById(requestId), items));
+    }
+
+    private List<ItemRequestDtoForGet> getListItemRequestDto(Integer userId, List<ItemRequest> itemRequests) {
+        /*List<ItemRequestDtoForGet> requestsDto = new ArrayList<>();
+        for (ItemRequest itemRequest : itemRequests) {
             List<ItemDto> items = itemService.findAllByRequest(userId);
             ItemRequestDtoForGet requestDto = ItemRequestMapper.toItemRequestDtoForGet(itemRequest, items);
             requestsDto.add(requestDto);
-        }
+        }*/
+        List<ItemRequestDtoForGet> requestsDto = itemRequests.stream()
+                .map(itemRequest -> {
+                    List<ItemDto> items = itemService.findAllByRequest(userId);
+                    ItemRequestDtoForGet requestDto = ItemRequestMapper.toItemRequestDtoForGet(itemRequest, items);
+                    return requestDto;
+                })
+                .sorted((o1, o2) -> o2.getCreated().compareTo(o1.getCreated()))
+                .collect(Collectors.toList());
         return requestsDto;
-    }
-
-    @Override
-    public List<ItemRequestDto> getAllRequests(Integer userId, Integer from, Integer size) {
-        return null;
-    }
-
-    @Override
-    public Optional<ItemRequestDto> getItemRequestById(Integer requestId) {
-        return Optional.empty();
     }
 }

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDtoForGet;
@@ -29,16 +30,17 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all") //GET /requests/all?from={from}&size={size}
-    public List<ItemRequestDto> getAllRequests(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public List<ItemRequestDtoForGet> getAllRequests(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                                @RequestParam(value = "from", defaultValue = "0", required = false)
-                                                    Integer from,
+                                                    Integer page,
                                                @RequestParam(value = "size", defaultValue = "10", required = false)
                                                    Integer size) {
-        return itemRequestService.getAllRequests(userId, from, size);
+        return itemRequestService.getAllRequests(userId, PageRequest.of(page, size));
     }
 
     @GetMapping("/{requestId}") //GET /requests/{requestId}
-    public ItemRequestDto getItemRequestById(@PathVariable("requestId") Integer id) {
-        return itemRequestService.getItemRequestById(id).get();
+    public ItemRequestDtoForGet getById(@RequestHeader("X-Sharer-User-Id") Integer userId,
+                                  @PathVariable("requestId") Integer id) {
+        return itemRequestService.getById(userId, id).get();
     }
 }
