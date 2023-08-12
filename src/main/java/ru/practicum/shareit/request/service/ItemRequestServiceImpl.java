@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.ItemRequest;
@@ -17,7 +17,7 @@ import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
-import java.util.ArrayList;
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -45,52 +45,60 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public List<ItemRequestDtoForGet> findAll(Integer userId) {
-        List<ItemRequest> requests = itemRequestRepository.findAllByRequester(userId);
-        return getListItemRequestDto(userId, requests);
+        userService.getUserById(userId);
+        return getListItemRequestDto(userId, findAllByRequesterId(userId));
     }
 
     @Override
-    public List<ItemRequestDtoForGet> getAllRequests(Integer userId, PageRequest pageRequesttt) {
-        /*Page<ItemRequest> page = itemRequestRepository.findAll(pageRequest);
-        return getListItemRequestDto(userId, page.getContent());*/
-        Sort sortById = Sort.by(Sort.Direction.ASC, "id");
-        Pageable page = PageRequest.of(0, 32, sortById);
+    public List<ItemRequestDtoForGet> getAllRequests(Integer userId, PageRequest pageRequestMethod) {
+        Pageable page = pageRequestMethod;
         do {
             Page<ItemRequest> pageRequest = itemRequestRepository.findAll(page);
             pageRequest.getContent().forEach(ItemRequest -> {
             });
             if(pageRequest.hasNext()){
-                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort()); // или для простоты -- userPage.nextOrLastPageable()
-            } else {
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
                 page = null;
             }
-            return getListItemRequestDto(userId, pageRequest.getContent());
+            List<ItemRequest> content = pageRequest.getContent().stream()
+                    .filter(i -> !i.getRequester().getId().equals(userId))
+                    .collect(Collectors.toList());
+            return getListItemRequestDto(userId, content);
         } while (page != null);
 
     }
 
     @Override
     public Optional<ItemRequestDtoForGet> getById(Integer userId, Integer requestId) {
-        List<ItemDto> items = itemService.findAllByRequest(userId);
-        return Optional.of(ItemRequestMapper.toItemRequestDtoForGet(
-                itemRequestRepository.getById(requestId), items));
+        userService.getUserById(userId);
+        List<ItemDto> items = itemService.findAllByRequest(requestId);
+        try {
+            return Optional.of(ItemRequestMapper.toItemRequestDtoForGet(
+                    itemRequestRepository.getById(requestId), items));
+        } catch (EntityNotFoundException ex) {
+            log.error("Запроса с id {} не существует", requestId);
+            throw new NotFoundException("Запроса с твким id не существует");
+        }
     }
 
     private List<ItemRequestDtoForGet> getListItemRequestDto(Integer userId, List<ItemRequest> itemRequests) {
-        /*List<ItemRequestDtoForGet> requestsDto = new ArrayList<>();
-        for (ItemRequest itemRequest : itemRequests) {
-            List<ItemDto> items = itemService.findAllByRequest(userId);
-            ItemRequestDtoForGet requestDto = ItemRequestMapper.toItemRequestDtoForGet(itemRequest, items);
-            requestsDto.add(requestDto);
-        }*/
         List<ItemRequestDtoForGet> requestsDto = itemRequests.stream()
                 .map(itemRequest -> {
-                    List<ItemDto> items = itemService.findAllByRequest(userId);
+                    List<ItemDto> items = itemService.findAllByRequest(itemRequest.getId());
                     ItemRequestDtoForGet requestDto = ItemRequestMapper.toItemRequestDtoForGet(itemRequest, items);
                     return requestDto;
                 })
                 .sorted((o1, o2) -> o2.getCreated().compareTo(o1.getCreated()))
                 .collect(Collectors.toList());
         return requestsDto;
+    }
+
+    private List<ItemRequest> findAllByRequesterId(Integer userId) {
+        try {
+            return itemRequestRepository.findAllByRequesterId(userId);
+        } catch (Throwable ex) {
+            log.info("Список запросов пользователя пуст");
+            return null;
+        }
     }
 }

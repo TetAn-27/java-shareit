@@ -15,6 +15,8 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
@@ -36,26 +38,31 @@ public class ItemServiceImpl implements ItemService {
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, UserService userService,
-                           BookingRepository bookingRepository, CommentRepository commentRepository) {
+                           BookingRepository bookingRepository, CommentRepository commentRepository,
+                           ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
     public Optional<ItemDto> create(int userId, ItemDto itemDto) {
         User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+        ItemRequest itemRequest = getItemRequest(itemDto.getRequestId());
         return Optional.of(ItemMapper.toItemDto(itemRepository.save(
-                ItemMapper.toItem(user, itemDto))));
+                ItemMapper.toItem(user, itemRequest, itemDto))));
     }
 
     @Override
     public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
-        Item item = getUpdateItem(itemId, ItemMapper.toItem(userRepository.getById(userId), itemDto));
+        ItemRequest itemRequest = getItemRequest(itemDto.getRequestId());
+        Item item = getUpdateItem(itemId, ItemMapper.toItem(userRepository.getById(userId), itemRequest, itemDto));
         if (item.getOwner().getId() != userId) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
@@ -72,8 +79,8 @@ public class ItemServiceImpl implements ItemService {
                     item.getOwner().getId() == userId ? getItemLastBooking(itemId) : null;
             return Optional.of(ItemMapper.toItemDtoForGet(item, lastBooking, nextBooking, getListComment(itemId)));
         } catch (EntityNotFoundException ex) {
-            log.error("Предмет с ID {} не был найден", itemId);
-            throw new NotFoundException("Предмет с таким ID не был найден");
+            log.error("Предмет с Id {} не был найден", itemId);
+            throw new NotFoundException("Предмет с таким Id не был найден");
         }
     }
 
@@ -97,7 +104,7 @@ public class ItemServiceImpl implements ItemService {
         }
         return toListItemDto(itemRepository.findByNameOrDescriptionContainingIgnoreCase(
                 text.toLowerCase(), text.toLowerCase())).stream()
-                .filter(i -> i.getAvailable())
+                .filter(ItemDto::getAvailable)
                 .collect(Collectors.toList());
     }
 
@@ -132,15 +139,15 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> findAllByRequest(int userId) {
-        List<Item> items = itemRepository.findAllByRequest(userId);
-        List<ItemDto> itemsDto = new ArrayList<>();
-        for (Item item : items) {
-            int itemId = item.getId();
-            ItemDto itemDto = ItemMapper.toItemDto(item);
-            itemsDto.add(itemDto);
+    public List<ItemDto> findAllByRequest(int requestId) {
+        List<Item> items;
+        try {
+            items = itemRepository.findAllByRequestId(requestId);
+        } catch (NullPointerException ex) {
+            log.info("На данный запрос ответы отсутсвуют");
+            return null;
         }
-        return itemsDto;
+        return toListItemDto(items);
     }
 
     private List<ItemDto> toListItemDto(List<Item> itemList) {
@@ -159,7 +166,7 @@ public class ItemServiceImpl implements ItemService {
             }
             return commentDtoList;
         } catch (NullPointerException ex) {
-            log.error("Комментарии к данной вещи отсутствуют");
+            log.info("Комментарии к данной вещи отсутствуют");
             return null;
         }
     }
@@ -191,6 +198,18 @@ public class ItemServiceImpl implements ItemService {
                             itemId, LocalDateTime.now(), Status.APPROVED));
         } catch (NullPointerException ex) {
             log.error("Вещь не забронирована");
+            return null;
+        }
+    }
+
+    private ItemRequest getItemRequest(Integer requestId) {
+        if (requestId == null) {
+            return null;
+        }
+        try {
+            return itemRequestRepository.getById(requestId);
+        } catch (IllegalArgumentException ex) {
+            log.error("На вещь пока нет запросов");
             return null;
         }
     }

@@ -1,7 +1,6 @@
 package ru.practicum.shareit.request.storage;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.practicum.shareit.request.ItemRequest;
@@ -13,7 +12,7 @@ public interface ItemRequestRepository extends JpaRepository<ItemRequest, Intege
     @Override
     ItemRequest save(ItemRequest itemRequest);
 
-    List<ItemRequest> findAllByRequester(Integer userId);
+    List<ItemRequest> findAllByRequesterId(Integer userId);
 
     Page<ItemRequest> findAll(Pageable pageable);
 
