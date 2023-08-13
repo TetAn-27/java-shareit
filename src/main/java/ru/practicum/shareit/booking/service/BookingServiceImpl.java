@@ -104,7 +104,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoResponse> getAllBookingByOwnerId(Integer ownerId, String state, PageRequest pageRequestMethod) {
-        /*userService.getUserById(ownerId);
+        userService.getUserById(ownerId);
         Pageable page = pageRequestMethod;
         do {
             Page<Booking> pageRequest = bookingRepository.findAllByItemOwnerId(ownerId, page);
@@ -116,9 +116,7 @@ public class BookingServiceImpl implements BookingService {
                 page = null;
             }
             return toListBookingDto(getListAccordingState(pageRequest.getContent(), state));
-        } while (page != null);*/
-        userService.getUserById(ownerId);
-        return toListBookingDto(getListAccordingState(bookingRepository.findAllByItemOwnerId(ownerId, pageRequestMethod).getContent(), state));
+        } while (page != null);
     }
 
     private List<BookingDtoResponse> toListBookingDto(List<Booking> bookingList) {
