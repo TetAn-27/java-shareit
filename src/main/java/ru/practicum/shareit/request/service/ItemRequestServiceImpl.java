@@ -46,7 +46,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public List<ItemRequestDtoForGet> findAll(Integer userId) {
         userService.getUserById(userId);
-        return getListItemRequestDto(userId, findAllByRequesterId(userId));
+        return getListItemRequestDto(findAllByRequesterId(userId));
     }
 
     @Override
@@ -63,9 +63,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             List<ItemRequest> content = pageRequest.getContent().stream()
                     .filter(i -> !i.getRequester().getId().equals(userId))
                     .collect(Collectors.toList());
-            return getListItemRequestDto(userId, content);
+            return getListItemRequestDto(content);
         } while (page != null);
-
     }
 
     @Override
@@ -81,7 +80,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         }
     }
 
-    private List<ItemRequestDtoForGet> getListItemRequestDto(Integer userId, List<ItemRequest> itemRequests) {
+    private List<ItemRequestDtoForGet> getListItemRequestDto(List<ItemRequest> itemRequests) {
         List<ItemRequestDtoForGet> requestsDto = itemRequests.stream()
                 .map(itemRequest -> {
                     List<ItemDto> items = itemService.findAllByRequest(itemRequest.getId());

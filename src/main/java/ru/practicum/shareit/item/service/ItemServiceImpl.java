@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
@@ -85,27 +88,39 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDtoForGet> getAllUserItems(int userId) {
-        List<Item> items = itemRepository.findAllByOwnerId(userId);
-        List<ItemDtoForGet> itemsDto = new ArrayList<>();
-        for (Item item : items) {
-            int itemId = item.getId();
-            ItemDtoForGet itemDto = ItemMapper.toItemDtoForGet(item, getItemLastBooking(itemId),
-                    getItemNextBooking(itemId), getListComment(itemId));
-            itemsDto.add(itemDto);
-        }
-        return itemsDto;
+    public List<ItemDtoForGet> getAllUserItems(int userId, PageRequest pageRequestMethod) {
+        Pageable page = pageRequestMethod;
+        do {
+            Page<Item> pageRequest = itemRepository.findAllByOwnerId(userId, page);
+            pageRequest.getContent().forEach(ItemRequest -> {
+            });
+            if(pageRequest.hasNext()){
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
+                page = null;
+            }
+        return toListItemDtoForGet(pageRequest.getContent());
+        } while (page != null);
     }
 
     @Override
-    public List<ItemDto> searchForItems(String text) {
+    public List<ItemDto> searchForItems(String text, PageRequest pageRequestMethod) {
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
-        return toListItemDto(itemRepository.findByNameOrDescriptionContainingIgnoreCase(
-                text.toLowerCase(), text.toLowerCase())).stream()
-                .filter(ItemDto::getAvailable)
-                .collect(Collectors.toList());
+        Pageable page = pageRequestMethod;
+        do {
+            Page<Item> pageRequest = itemRepository.findByNameOrDescriptionContainingIgnoreCase(page,
+                    text.toLowerCase(), text.toLowerCase());
+            pageRequest.getContent().forEach(ItemRequest -> {
+            });
+            if(pageRequest.hasNext()){
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
+                page = null;
+            }
+            return toListItemDto(pageRequest.getContent()).stream()
+                    .filter(ItemDto::getAvailable)
+                    .collect(Collectors.toList());
+        } while (page != null);
     }
 
     @Override
@@ -154,6 +169,16 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDto> itemDtoList = new ArrayList<>();
         for (Item item : itemList) {
             itemDtoList.add(ItemMapper.toItemDto(item));
+        }
+        return itemDtoList;
+    }
+
+    private List<ItemDtoForGet> toListItemDtoForGet(List<Item> itemList) {
+        List<ItemDtoForGet> itemDtoList = new ArrayList<>();
+        for (Item item : itemList) {
+            int itemId = item.getId();
+            itemDtoList.add(ItemMapper.toItemDtoForGet(item, getItemLastBooking(itemId),
+                    getItemNextBooking(itemId), getListComment(itemId)));
         }
         return itemDtoList;
     }
