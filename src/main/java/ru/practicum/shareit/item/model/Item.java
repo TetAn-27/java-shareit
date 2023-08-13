@@ -31,7 +31,7 @@ public class Item {
     @Column(name = "description", nullable = false)
     private String description;
     @NotNull
-    @Column(name = "available", nullable = false)
+    @Column(name = "is_available", nullable = false)
     private Boolean available;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)

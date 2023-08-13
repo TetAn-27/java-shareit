@@ -25,7 +25,6 @@ import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static ru.practicum.shareit.booking.dto.BookingMapper.toBookingDto;
 
@@ -128,28 +127,26 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<Booking> getListAccordingState(List<Booking> bookingList, String state) {
-        Stream<Booking> sortedStream = bookingList.stream()
-                .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()));
         switch (state) {
             case "ALL":
-                return sortedStream.collect(Collectors.toList());
+                return bookingList;
             case "CURRENT":
-                return checkingStatusForCurrent(sortedStream);
+                return checkingStatusForCurrent(bookingList);
             case "PAST":
-                return checkingStatusForPast(sortedStream);
+                return checkingStatusForPast(bookingList);
             case "FUTURE":
-                return checkingStatusForFuture(sortedStream);
+                return checkingStatusForFuture(bookingList);
             case "WAITING":
-                return checkingStatusForWaiting(sortedStream);
+                return checkingStatusForWaiting(bookingList);
             case "REJECTED":
-                return checkingStatusForRejected(sortedStream);
+                return checkingStatusForRejected(bookingList);
             default:
                 throw new StateException("Был указан неверный параметр фильтрации");
         }
     }
 
-    private List<Booking> checkingStatusForCurrent(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForCurrent(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> !i.getStatus().equals(Status.CANCELED)
                         && (i.getStart().equals(LocalDateTime.now())
                         || i.getStart().isBefore(LocalDateTime.now()))
@@ -158,16 +155,16 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForPast(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForPast(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> i.getStatus().equals(Status.APPROVED)
                         && i.getStart().isBefore(LocalDateTime.now())
                         && i.getEnd().isBefore(LocalDateTime.now()))
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForFuture(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForFuture(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> i.getStatus().equals(Status.APPROVED)
                         || i.getStatus().equals(Status.WAITING)
                         && i.getStart().isAfter(LocalDateTime.now())
@@ -175,14 +172,14 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForWaiting(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForWaiting(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> i.getStatus().equals(Status.WAITING))
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForRejected(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForRejected(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> i.getStatus().equals(Status.REJECTED))
                 .collect(Collectors.toList());
     }
