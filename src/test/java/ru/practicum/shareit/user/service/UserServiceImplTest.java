@@ -1,138 +1,108 @@
 package ru.practicum.shareit.user.service;
 
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserMapper;
+import ru.practicum.shareit.user.storage.UserRepository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import javax.transaction.Transactional;
-
+import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@Transactional
-@SpringBootTest(
-        properties = "db.name=test",
-        webEnvironment = SpringBootTest.WebEnvironment.NONE)
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
 
-    private final EntityManager em;
-    private final UserService service;
+    @Mock
+    private UserRepository userRepository;
+    @InjectMocks
+    private UserServiceImpl userService;
+    @Captor
+    private ArgumentCaptor<User> userArgumentCaptor;
 
-    private UserDto makeUserDto(String email, String name) {
-        return new UserDto(
-                null,
-                name,
-                email
-        );
+    @Test
+    void findAll_whenRightConditions_thenReturnedList() {
+        List<User> expectedUsers = new ArrayList<>();
+        when(userRepository.findAll()).thenReturn(expectedUsers);
+
+        List<UserDto> actualUserDto = userService.findAll();
+
+        assertEquals(UserMapper.toListUserDto(expectedUsers), actualUserDto);
+        verify(userRepository, times(1)).findAll();
     }
 
     @Test
-    void integrationTestingFindAllUsers() {
+    void createUser_whenParametersValid_thenSavedUser() {
+        User userToSave = new User(0, "name", "name@mail.ru");
+        when(userRepository.save(userToSave)).thenReturn(userToSave);
+        UserDto userDto = UserMapper.toUserDto(userToSave);
 
-        List<UserDto> sourceUsers = List.of(
-                makeUserDto("name1@email", "name1"),
-                makeUserDto("name2@email", "name2"),
-                makeUserDto("name3@email", "name3")
-        );
+        UserDto actualUserDto = userService.create(userDto).get();
 
-        for (UserDto user : sourceUsers) {
-            User entity = UserMapper.toUser(user.getId(), user);
-            em.persist(entity);
-        }
-        em.flush();
-
-        List<UserDto> targetUsers = service.findAll();
-
-        assertThat(targetUsers, hasSize(sourceUsers.size()));
-        for (UserDto sourceUser : sourceUsers) {
-            assertThat(targetUsers, hasItem( allOf(
-                    hasProperty("id", notNullValue()),
-                    hasProperty("name", equalTo(sourceUser.getName())),
-                    hasProperty("email", equalTo(sourceUser.getEmail()))
-            )));
-        }
+        assertEquals(userDto, actualUserDto);
+        verify(userRepository, times(1)).save(userToSave);
     }
 
     @Test
-    void integrationTestingSaveUser() {
+    void updateUser_whenUserFound_thenUpdateOnlyAvailableFields() {
+        Integer userId = 0;
+        User oldUser = new User();
+        oldUser.setId(userId);
+        oldUser.setName("oldName");
+        oldUser.setEmail("oldName@email.com");
+        User newUser = new User();
+        newUser.setName("newName");
+        newUser.setEmail("newName@email.com");
+        when(userRepository.getById(userId)).thenReturn(oldUser);
+        when(userRepository.save(oldUser)).thenReturn(oldUser);
 
-        UserDto userDto = makeUserDto("name@email.com", "name");
-        service.create(userDto);
+        userService.create(UserMapper.toUserDto(oldUser));
+        UserDto actualUser = userService.update(userId, UserMapper.toUserDto(newUser)).get();
 
-        TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
-        User user = query.setParameter("email", userDto.getEmail())
-                .getSingleResult();
+        verify(userRepository, times(2)).save(userArgumentCaptor.capture());
+        User userSaved = userArgumentCaptor.getValue();
 
-        assertThat(user.getId(), notNullValue());
-        assertThat(user.getName(), equalTo(userDto.getName()));
-        assertThat(user.getEmail(), equalTo(userDto.getEmail()));
+        assertEquals("newName", userSaved.getName());
+        assertEquals("newName@email.com", userSaved.getEmail());
     }
 
     @Test
-    void integrationTestingUpdateUser() {
+    void getUserById_whenUserFound_thenReturnedUser() {
+        Integer userId = 0;
+        User expectedUser = new User();
+        when(userRepository.getById(userId)).thenReturn(expectedUser);
 
-        UserDto userDto = makeUserDto("name@email.com", "name");
-        service.create(userDto);
+        UserDto actualUserDto = userService.getUserById(userId).get();
 
-        TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
-        User user = query.setParameter("email", userDto.getEmail())
-                .getSingleResult();
-
-        UserDto userDtoUpdate = makeUserDto("nameUpdate@email.com", "nameUpdate");
-        service.update(user.getId(), userDtoUpdate);
-
-        TypedQuery<User> queryUpdate = em.createQuery("Select u from User u where u.id = :id", User.class);
-        User userUpdate = queryUpdate.setParameter("id", user.getId())
-                .getSingleResult();
-
-        assertThat(userUpdate.getId(), notNullValue());
-        assertThat(userUpdate.getName(), equalTo(userDtoUpdate.getName()));
-        assertThat(userUpdate.getEmail(), equalTo(userDtoUpdate.getEmail()));
+        assertEquals(UserMapper.toUserDto(expectedUser), actualUserDto);
+        verify(userRepository, times(1)).getById(userId);
     }
 
     @Test
-    void integrationTestingGetUserById() {
+    void getUserById_whenUserNotFound_thenNotFoundException() {
+        Integer userId = 0;
+        when(userRepository.getById(userId)).thenThrow(EntityNotFoundException.class);
 
-        UserDto userDto = makeUserDto("name@email.com", "name");
-        User entity = UserMapper.toUser(userDto.getId(), userDto);
-        em.persist(entity);
-        em.flush();
-
-        TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
-        User user = query.setParameter("email", userDto.getEmail())
-                .getSingleResult();
-
-        UserDto targetUser = service.getUserById(user.getId()).get();
-
-        assertThat(targetUser.getId(), notNullValue());
-        assertThat(targetUser.getName(), equalTo(userDto.getName()));
-        assertThat(targetUser.getEmail(), equalTo(userDto.getEmail()));
+        NotFoundException notFoundException = assertThrows(NotFoundException.class,
+        () -> userService.getUserById(userId));
     }
 
     @Test
-    void integrationTestingDelete() {
-        UserDto userDto = makeUserDto("name@email.com", "name");
-        service.create(userDto);
+    void deleteUser_whenUserNotFound_thenNotFoundException() {
+        Integer userId = 0;
+        doThrow(NotFoundException.class).when(userRepository).deleteById(userId);
 
-        TypedQuery<User> query = em.createQuery("Select u from User u where u.email = :email", User.class);
-        User user = query.setParameter("email", userDto.getEmail())
-                .getSingleResult();
-
-        List<UserDto> targetUsers = service.findAll();
-        assertThat(targetUsers.size(), equalTo(1));
-
-        service.deleteUser(user.getId());
-
-        targetUsers = service.findAll();
-        assertThat(targetUsers.size(), equalTo(0));
+        NotFoundException notFoundException = assertThrows(NotFoundException.class,
+                () -> userService.deleteUser(userId));
     }
 }
