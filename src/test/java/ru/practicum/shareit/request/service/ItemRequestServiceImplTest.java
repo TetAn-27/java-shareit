@@ -74,7 +74,7 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
-    void getAllRequests() {
+    void getAllRequests_whenRightConditions_thenReturnedList() {
         List<ItemRequest> expectedItemRequest = new ArrayList<>();
         Page<ItemRequest> pageExpectedItemRequest = new PageImpl<>(expectedItemRequest);
         PageRequest pageRequest = PageRequest.of(0, 10);

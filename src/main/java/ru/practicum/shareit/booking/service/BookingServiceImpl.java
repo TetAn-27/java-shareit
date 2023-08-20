@@ -165,8 +165,8 @@ public class BookingServiceImpl implements BookingService {
 
     private List<Booking> checkingStatusForFuture(List<Booking> sortedStream) {
         return sortedStream.stream()
-                .filter(i -> i.getStatus().equals(Status.APPROVED)
-                        || i.getStatus().equals(Status.WAITING)
+                .filter(i -> (i.getStatus().equals(Status.APPROVED)
+                        || i.getStatus().equals(Status.WAITING))
                         && i.getStart().isAfter(LocalDateTime.now())
                         && i.getEnd().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
