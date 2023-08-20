@@ -27,6 +27,7 @@ import ru.practicum.shareit.user.storage.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -209,7 +210,7 @@ public class ItemServiceImpl implements ItemService {
         try {
             return BookingMapper.toBookingDtoRequest(
                 bookingRepository.findFirst1ByItemIdAndStartLessThanEqualAndStatusOrderByStartDesc(
-                        itemId, LocalDateTime.now(), Status.APPROVED));
+                        itemId, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), Status.APPROVED));
         } catch (NullPointerException ex) {
             log.error("Вещь не забронирована");
             return null;
@@ -220,7 +221,7 @@ public class ItemServiceImpl implements ItemService {
         try {
             return BookingMapper.toBookingDtoRequest(
                     bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
-                            itemId, LocalDateTime.now(), Status.APPROVED));
+                            itemId, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), Status.APPROVED));
         } catch (NullPointerException ex) {
             log.error("Вещь не забронирована");
             return null;
