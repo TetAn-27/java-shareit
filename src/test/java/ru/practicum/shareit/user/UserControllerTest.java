@@ -50,7 +50,7 @@ class UserControllerTest {
     }
 
     @Test
-    void getUserById() throws Exception {
+    void getUserById_whenUserFound_thenReturnedUser() throws Exception {
         when(userService.getUserById(eq(userDto.getId())))
                 .thenReturn(Optional.of(userDto));
 
@@ -62,7 +62,7 @@ class UserControllerTest {
     }
 
     @Test
-    void findAll() throws Exception {
+    void findAll_whenParametersValid_thenReturnedUser() throws Exception {
         when(userService.findAll())
                 .thenReturn(List.of(userDto));
 
@@ -75,7 +75,7 @@ class UserControllerTest {
     }
 
     @Test
-    void create() throws Exception {
+    void create_whenParametersValid_thenReturnedUser() throws Exception {
         when(userService.create(any()))
                 .thenReturn(Optional.of(userDto));
 
@@ -91,7 +91,7 @@ class UserControllerTest {
     }
 
     @Test
-    void update() throws Exception {
+    void update_whenUserFound_thenReturnedUser() throws Exception {
         userService.create(userDto);
         userDto.setName("nameUpdate");
         userDto.setEmail("nameUpdate@mail.com");
@@ -110,7 +110,7 @@ class UserControllerTest {
     }
 
     @Test
-    void deleteUser() throws Exception {
+    void deleteUser_whenUserFound_thenDeletedUser() throws Exception {
         userService.create(userDto);
         userService.deleteUser(eq(userDto.getId()));
 

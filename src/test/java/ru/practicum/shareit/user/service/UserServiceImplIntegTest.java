@@ -36,8 +36,7 @@ class UserServiceImplIntegTest {
     }
 
     @Test
-    void integrationTestingFindAllUsers() {
-
+    void findAllUsers_whenParametersValid_thenReturnedUser() {
         List<UserDto> sourceUsers = List.of(
                 makeUserDto("name1@email", "name1"),
                 makeUserDto("name2@email", "name2"),
@@ -63,8 +62,7 @@ class UserServiceImplIntegTest {
     }
 
     @Test
-    void integrationTestingSaveUser() {
-
+    void saveUser_whenParametersValid_thenReturnedUser() {
         UserDto userDto = makeUserDto("name@email.com", "name");
         service.create(userDto);
 
@@ -79,7 +77,6 @@ class UserServiceImplIntegTest {
 
     @Test
     void integrationTestingUpdateUser() {
-
         UserDto userDto = makeUserDto("name@email.com", "name");
         service.create(userDto);
 
@@ -100,8 +97,7 @@ class UserServiceImplIntegTest {
     }
 
     @Test
-    void integrationTestingGetUserById() {
-
+    void getUserById_whenUserFound_thenReturnedUser() {
         UserDto userDto = makeUserDto("name@email.com", "name");
         User entity = UserMapper.toUser(userDto.getId(), userDto);
         em.persist(entity);
@@ -119,7 +115,7 @@ class UserServiceImplIntegTest {
     }
 
     @Test
-    void integrationTestingDelete() {
+    void delete_whenUserFound_thenDeleteUser() {
         UserDto userDto = makeUserDto("name@email.com", "name");
         service.create(userDto);
 
