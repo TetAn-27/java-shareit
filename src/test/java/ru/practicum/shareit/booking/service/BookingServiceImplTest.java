@@ -17,6 +17,7 @@ import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.storage.BookingRepository;
 import ru.practicum.shareit.exception.BookingValidException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.StateException;
 import ru.practicum.shareit.exception.UserItemException;
 import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -374,6 +375,30 @@ class BookingServiceImplTest {
                 ReflectionTestUtils.invokeMethod(bookingService, "toListBookingDto", expectedBookings);
 
         assertEquals(actualBookingDtoResponse, expectedBookingDtoResponse);
+        verify(bookingRepository, times(1)).findAllByBookerId(id, pageRequest);
+    }
+
+    @Test
+    void getAllBookingByBookerId_whenStateIncorrect_thenStateException() {
+        int id = 1;
+        User user = new User(id, "name", "name@mail.ru");
+        Item item1 = new Item(1, "name1", "description1", true, user, null);
+        item1.setId(id);
+        Booking expectedBooking1 =
+                new Booking(id, LocalDateTime.now(), LocalDateTime.now().plusMinutes(50), item1, user, Status.REJECTED);
+        Item item2 = new Item(2, "name2", "description2", true, user, null);
+        item2.setId(id);
+        Booking expectedBooking2 =
+                new Booking(id, LocalDateTime.now(), LocalDateTime.now().plusMinutes(50), item2, user, Status.APPROVED);
+        List<Booking> checkBookingList = new ArrayList<>();
+        checkBookingList.add(expectedBooking1);
+        checkBookingList.add(expectedBooking2);
+        Page<Booking> pageExpectedBookings = new PageImpl<>(checkBookingList);
+        PageRequest pageRequest = PageRequest.of(0, 10);
+        when(userService.getUserById(id)).thenReturn(Optional.of(UserMapper.toUserDto(user)));
+        when(bookingRepository.findAllByBookerId(id, pageRequest)).thenReturn(pageExpectedBookings);
+
+        assertThrows(StateException.class, () -> bookingService.getAllBookingByBookerId(id, "INCORRECT_STATE", pageRequest));
         verify(bookingRepository, times(1)).findAllByBookerId(id, pageRequest);
     }
 

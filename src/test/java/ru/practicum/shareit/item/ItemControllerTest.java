@@ -111,10 +111,11 @@ class ItemControllerTest {
 
     @Test
     void updateItem_whenParametersValid_thenReturnedItem() throws Exception {
-        when(itemService.create(anyInt(), any()))
+        int id = 1;
+        when(itemService.update(anyInt(), anyInt(), any()))
                 .thenReturn(Optional.of(itemDto));
 
-        String result = mvc.perform(post("/items")
+        String result = mvc.perform(patch("/items/{itemId}", id)
                         .content(mapper.writeValueAsString(itemDto))
                         .characterEncoding(StandardCharsets.UTF_8)
                         .header("X-Sharer-User-Id", 1)
@@ -126,6 +127,7 @@ class ItemControllerTest {
                 .getContentAsString();
 
         assertEquals(mapper.writeValueAsString(itemDto), result);
+        verify(itemService).update(anyInt(), anyInt(), any());
     }
 
     @Test
