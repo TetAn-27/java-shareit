@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,19 +11,10 @@ import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class ItemRequestDto {
     private Integer id;
     @NotNull
     private String description;
-    @NotNull
     private LocalDateTime created;
-
-    public ItemRequestDto(Integer id, String description, LocalDateTime created) {
-        this.id = id;
-        this.description = description;
-        this.created = created == null ? LocalDateTime.now() : created;
-    }
-
-    /*public ItemRequestDto() {
-    }*/
 }

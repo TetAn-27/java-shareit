@@ -7,6 +7,7 @@ import ru.practicum.shareit.request.dto.ItemRequestDtoForGet;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,13 +19,14 @@ public class ItemRequestController {
         this.itemRequestService = itemRequestService;
     }
 
-    @PostMapping
+    @PostMapping()
     public ItemRequestDto create(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                  @Valid @RequestBody ItemRequestDto itemRequestDto) {
+        itemRequestDto.setCreated(LocalDateTime.now());
         return itemRequestService.create(userId, itemRequestDto).get();
     }
 
-    @GetMapping
+    @GetMapping()
     public List<ItemRequestDtoForGet> findAll(@RequestHeader("X-Sharer-User-Id") Integer userId) {
         return itemRequestService.findAll(userId);
     }
