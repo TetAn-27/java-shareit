@@ -168,8 +168,8 @@ class ItemServiceImplTest {
                 ReflectionTestUtils.invokeMethod(itemService, "toListItemDto", expectedItems);
 
         assertEquals(expectedItemDto, actualItemDto);
-        verify(itemRepository, times(1)).
-                findByNameOrDescriptionContainingIgnoreCase(pageRequest, text, text);
+        verify(itemRepository, times(1))
+                .findByNameOrDescriptionContainingIgnoreCase(pageRequest, text, text);
     }
 
     @Test
@@ -262,7 +262,7 @@ class ItemServiceImplTest {
                 "name",
                 "name@eamil.com");
         User owner = new User(
-                id+1,
+                2,
                 "owner",
                 "owner@eamil.com");
         ItemRequest itemRequest = new ItemRequest(

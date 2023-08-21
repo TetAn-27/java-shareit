@@ -90,6 +90,7 @@ class ItemControllerTest {
         );
         mapper.findAndRegisterModules();
     }
+
     @Test
     void createItem_whenParametersValid_thenReturnedItem() throws Exception {
         when(itemService.create(anyInt(), any()))

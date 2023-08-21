@@ -51,8 +51,7 @@ public class BookingController {
                                                                     required = false) @Min(0) int page,
                                                             @RequestParam(value = "size", defaultValue = "10",
                                                                     required = false) @Min(1) int size) {
-        return bookingService.getAllBookingByBookerId(userId, state,
-                PageRequest.of(page/size, size, Sort.Direction.DESC, "start"));
+        return bookingService.getAllBookingByBookerId(userId, state, PageRequest.of(page/size, size, Sort.Direction.DESC, "start"));
     }
 
     @GetMapping("/owner") //GET /bookings/owner?state={state}
@@ -64,7 +63,6 @@ public class BookingController {
                                                                    required = false) @Min(0) int page,
                                                            @RequestParam(value = "size", defaultValue = "10",
                                                                    required = false) @Min(1) int size) {
-        return bookingService.getAllBookingByOwnerId(userId, state,
-                PageRequest.of(page/size, size, Sort.Direction.DESC, "start"));
+        return bookingService.getAllBookingByOwnerId(userId, state, PageRequest.of(page/size, size, Sort.Direction.DESC, "start"));
     }
 }

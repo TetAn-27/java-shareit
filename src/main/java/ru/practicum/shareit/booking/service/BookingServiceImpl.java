@@ -92,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
             Page<Booking> pageRequest = bookingRepository.findAllByBookerId(bookerId, page);
             pageRequest.getContent().forEach(ItemRequest -> {
             });
-            if(pageRequest.hasNext()){
+            if (pageRequest.hasNext()) {
                 page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
             } else {
                 page = null;
@@ -109,7 +109,7 @@ public class BookingServiceImpl implements BookingService {
             Page<Booking> pageRequest = bookingRepository.findAllByItemOwnerId(ownerId, page);
             pageRequest.getContent().forEach(ItemRequest -> {
             });
-            if(pageRequest.hasNext()){
+            if (pageRequest.hasNext()) {
                 page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
             } else {
                 page = null;

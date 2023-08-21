@@ -119,7 +119,7 @@ class BookingControllerTest {
     }
 
     @Test
-    void getAllBookingByBookerId_whenParametersValid_thenReturnedBookingList() throws Exception{
+    void getAllBookingByBookerId_whenParametersValid_thenReturnedBookingList() throws Exception {
         int id = 1;
         when(bookingService.getAllBookingByBookerId(1, "WAITING",
                 PageRequest.of(0, 10, Sort.Direction.DESC, "start")))

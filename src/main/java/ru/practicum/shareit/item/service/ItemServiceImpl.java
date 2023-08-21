@@ -95,7 +95,7 @@ public class ItemServiceImpl implements ItemService {
             Page<Item> pageRequest = itemRepository.findAllByOwnerId(userId, page);
             pageRequest.getContent().forEach(ItemRequest -> {
             });
-            if(pageRequest.hasNext()){
+            if (pageRequest.hasNext()) {
                 page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
                 page = null;
             }
@@ -114,7 +114,7 @@ public class ItemServiceImpl implements ItemService {
                     text.toLowerCase(), text.toLowerCase());
             pageRequest.getContent().forEach(ItemRequest -> {
             });
-            if(pageRequest.hasNext()){
+            if (pageRequest.hasNext()) {
                 page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
                 page = null;
             }

@@ -56,7 +56,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             Page<ItemRequest> pageRequest = itemRequestRepository.findAll(page);
             pageRequest.getContent().forEach(ItemRequest -> {
             });
-            if(pageRequest.hasNext()){
+            if (pageRequest.hasNext()) {
                 page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
                 page = null;
             }
