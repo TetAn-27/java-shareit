@@ -15,6 +15,7 @@ import ru.practicum.shareit.booking.Status;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingMapper;
 import ru.practicum.shareit.booking.storage.BookingRepository;
+import ru.practicum.shareit.exception.BookingValidException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
@@ -199,7 +200,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void findAllByRequest_whenNotItemFound_thenReturnedNull() {
+    void findAllByRequest_whenItemNotFound_thenReturnedNull() {
         when(itemRepository.findAllByRequestId(anyInt())).thenThrow(NullPointerException.class);
 
         List<ItemDto> actualItemDto = itemService.findAllByRequest(1);
@@ -209,9 +210,90 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void addComment_whenBookingEndIsAfterCommentCreated_thenBookingValidException() {
+        int id = 1;
+        User user = new User(
+                id,
+                "name",
+                "name@eamil.com");
+        ItemRequest itemRequest = new ItemRequest(
+                id,
+                "description",
+                user,
+                LocalDateTime.now()
+        );
+        Item item = new Item(
+                id,
+                "name",
+                "description",
+                true,
+                user,
+                itemRequest
+        );
+        Booking booking = new Booking(
+                id,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(120),
+                item,
+                user,
+                Status.WAITING);
+
+        when(bookingRepository.findFirst1ByItemIdAndBookerId(id, id)).thenReturn(booking);
+        when(userService.getUserById(id)).thenReturn(Optional.of(UserMapper.toUserDto(user)));
+        CommentDto commentDtoToSave = new CommentDto(
+                id,
+                "text",
+                id,
+                id,
+                null,
+                LocalDateTime.now()
+        );
+        Comment commentToSave = CommentMapper.toComment(commentDtoToSave, item, user);
+
+        assertThrows(BookingValidException.class, () -> itemService.addComment(id, id, commentDtoToSave));
+        verify(commentRepository, never()).save(any(Comment.class));
+    }
+
+    @Test
     void addComment_whenUserNotRentItem_thenNotFoundException() {
         int id = 1;
-        CommentDto commentDtoToSave = new CommentDto(id, "text", id, 1, "name", LocalDateTime.now());
+        User user = new User(
+                id,
+                "name",
+                "name@eamil.com");
+        User owner = new User(
+                id+1,
+                "owner",
+                "owner@eamil.com");
+        ItemRequest itemRequest = new ItemRequest(
+                id,
+                "description",
+                user,
+                LocalDateTime.now()
+        );
+        Item item = new Item(
+                id,
+                "name",
+                "description",
+                true,
+                owner,
+                itemRequest
+        );
+        Booking booking = new Booking(
+                id,
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(120),
+                item,
+                user,
+                Status.WAITING);
+        Comment commentToSave = new Comment(
+                id,
+                "text",
+                item,
+                user,
+                LocalDateTime.now().plusMinutes(130));
+        CommentDto commentDtoToSave = CommentMapper.toCommentDto(commentToSave);
+
         when(bookingRepository.findFirst1ByItemIdAndBookerId(id, id)).thenThrow(NullPointerException.class);
 
         assertThrows(NotFoundException.class, () -> itemService.addComment(id, id, commentDtoToSave));
