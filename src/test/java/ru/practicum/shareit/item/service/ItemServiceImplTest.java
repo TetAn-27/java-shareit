@@ -2,6 +2,8 @@ package ru.practicum.shareit.item.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -57,6 +59,8 @@ class ItemServiceImplTest {
     private ItemRequestRepository itemRequestRepository;
     @InjectMocks
     private ItemServiceImpl itemService;
+    @Captor
+    private ArgumentCaptor<Item> itemArgumentCaptor;
 
     @Test
     void createItem_whenParametersValid_thenSavedItem() {
@@ -76,6 +80,17 @@ class ItemServiceImplTest {
         assertEquals(itemDtoToSave, actualItemDto);
         verify(itemRepository, times(1)).save(itemToSave);
     }
+
+    @Test
+    void updateItem_whenOldItemNotFound_thenNullPointerException() {
+        int id = 1;
+        User user = new User(id, "name", "name@mail.ru");
+        Item newItem = new Item(null, "newName", "newDescription", true, user, null);
+
+        assertThrows(NullPointerException.class, () -> itemService.update(id, id, ItemMapper.toItemDto(newItem)));
+        verify(itemRepository, never()).save(newItem);
+}
+
 
     @Test
     void getItemById_whenItemFound_thenReturnedItem() {

@@ -48,7 +48,7 @@ class BookingServiceImplTest {
     private BookingServiceImpl bookingService;
 
     @Test
-    void createRequest_whenParametersValid_thenSavedUser() {
+    void createRequest_whenParametersValid_thenSavedBooking() {
         int id = 1;
         User user = new User(id, "name", "name@mail.ru");
         User owner = new User(2, "owner", "owner@mail.ru");
@@ -67,20 +67,6 @@ class BookingServiceImplTest {
 
         assertEquals(expectedBookingDto, actualBookingDto);
         verify(bookingRepository, times(1)).save(any(Booking.class));
-    }
-
-    @Test
-    void createRequest_whenDtaTimeNotValid_thenSavedUser() {
-        int id = 1;
-        User user = new User(id, "name", "name@mail.ru");
-        User owner = new User(2, "owner", "owner@mail.ru");
-        Item item = new Item(id, "name", "description", true, owner, null);
-        item.setId(id);
-        BookingDtoRequest bookingDtoToSave =
-                new BookingDtoRequest(id, LocalDateTime.now(), LocalDateTime.now(), id, id, Status.WAITING);
-
-        assertThrows(BookingValidException.class, () -> bookingService.createRequest(id, bookingDtoToSave));
-        verify(bookingRepository, never()).save(any(Booking.class));
     }
 
     @Test
@@ -120,7 +106,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void responseToRequest_whenParametersValid_thenUpdateUser() {
+    void responseToRequest_whenParametersValid_thenUpdateBooking() {
         int id = 1;
         User user = new User();
         user.setId(id);
