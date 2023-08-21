@@ -89,8 +89,36 @@ class ItemServiceImplTest {
 
         assertThrows(NullPointerException.class, () -> itemService.update(id, id, ItemMapper.toItemDto(newItem)));
         verify(itemRepository, never()).save(newItem);
-}
+    }
 
+    @Test
+    void updateItem_whenOwnerNotEqualsUser_thenUserItemException() {
+        int userId = 1;
+        Integer itemId = 1;
+        User user = new User(userId, "name", "name@mail.ru");
+        ItemRequest itemRequest = new ItemRequest(
+                1,
+                "description",
+                user,
+                LocalDateTime.now()
+        );
+        ItemDto oldItemDto = new ItemDto(itemId, "name", "description", true, 1);
+        Item oldItem = ItemMapper.toItem(user, itemRequest, oldItemDto);
+        ItemDto newItemDto = new ItemDto(itemId, "newName", "newDescription", true, 1);
+        Item newItem = ItemMapper.toItem(user, itemRequest, newItemDto);
+        when(itemRequestRepository.getById(anyInt())).thenReturn(itemRequest);
+        when(userRepository.getById(anyInt())).thenReturn(user);
+        when(itemRepository.getById(itemId)).thenReturn(oldItem);
+        when(itemRepository.save(newItem)).thenReturn(newItem);
+
+        ItemDto actualItem = itemService.update(userId, itemId, newItemDto).get();
+
+        verify(itemRepository, times(1)).save(itemArgumentCaptor.capture());
+        Item itemSaved = itemArgumentCaptor.getValue();
+
+        assertEquals("newName", itemSaved.getName());
+        assertEquals("newDescription", itemSaved.getDescription());
+    }
 
     @Test
     void getItemById_whenItemFound_thenReturnedItem() {
@@ -150,12 +178,16 @@ class ItemServiceImplTest {
 
         NotFoundException notFoundException = assertThrows(NotFoundException.class,
                 () -> itemService.getItemById(1, 1));
+        assertEquals(notFoundException.getMessage(), "Предмет с таким Id не был найден");
     }
 
     @Test
     void getAllUserItems_whenRightConditions_thenReturnedList() {
         int id = 1;
-        List<Item> expectedItems = new ArrayList<>();
+        User user = new User();
+        user.setId(id);
+        Item expectedItem = new Item(id, "name", "description", true, user, null);
+        List<Item> expectedItems = List.of(expectedItem);
         Page<Item> pageExpectedItems = new PageImpl<>(expectedItems);
         PageRequest pageRequest = PageRequest.of(0, 10);
         when(itemRepository.findAllByOwnerId(id, pageRequest)).thenReturn(pageExpectedItems);

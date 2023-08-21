@@ -18,6 +18,7 @@ import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             return itemRequestRepository.findAllByRequesterId(userId);
         } catch (Throwable ex) {
             log.info("Список запросов пользователя пуст");
-            return null;
+            return new ArrayList<>();
         }
     }
 }

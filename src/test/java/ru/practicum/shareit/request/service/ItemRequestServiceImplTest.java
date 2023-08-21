@@ -74,6 +74,18 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    void findAll_whenListNull_thenReturnedNull() {
+        Integer userId = 1;
+        List<ItemRequestDtoForGet> expectedItemRequest = new ArrayList<>();
+        when(itemRequestRepository.findAllByRequesterId(anyInt())).thenThrow(EntityNotFoundException.class);
+
+        List<ItemRequestDtoForGet> actualItemRequestDto = itemRequestService.findAll(userId);
+
+        assertEquals(expectedItemRequest, actualItemRequestDto);
+        verify(itemRequestRepository, times(1)).findAllByRequesterId(anyInt());
+    }
+
+    @Test
     void getAllRequests_whenRightConditions_thenReturnedList() {
         List<ItemRequest> expectedItemRequest = new ArrayList<>();
         Page<ItemRequest> pageExpectedItemRequest = new PageImpl<>(expectedItemRequest);
