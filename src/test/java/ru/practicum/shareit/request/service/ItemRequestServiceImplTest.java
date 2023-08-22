@@ -23,6 +23,7 @@ import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,9 +47,8 @@ class ItemRequestServiceImplTest {
     @Test
     void createItemRequest_whenParametersValid_thenSavedItemRequest() {
         Integer userId = 1;
-        User user = new User();
-        user.setId(userId);
-        ItemRequestDto itemRequestDtoToSaved = new ItemRequestDto(1, "name", LocalDateTime.now());
+        User user = new User(userId, "name", "name@email.com");
+        ItemRequestDto itemRequestDtoToSaved = new ItemRequestDto(userId, "name", LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         ItemRequest itemRequestToSave = ItemRequestMapper.toItemRequest(user, itemRequestDtoToSaved);
         when(userService.getUserById(anyInt())).thenReturn(Optional.of(UserMapper.toUserDto(user)));
         when(itemRequestRepository.save(itemRequestToSave)).thenReturn(itemRequestToSave);

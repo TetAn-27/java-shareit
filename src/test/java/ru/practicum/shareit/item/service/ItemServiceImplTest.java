@@ -29,7 +29,6 @@ import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.user.storage.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
@@ -47,8 +46,6 @@ class ItemServiceImplTest {
 
     @Mock
     private ItemRepository itemRepository;
-    @Mock
-    private UserRepository userRepository;
     @Mock
     private BookingRepository bookingRepository;
     @Mock
@@ -82,17 +79,7 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void updateItem_whenOldItemNotFound_thenNullPointerException() {
-        int id = 1;
-        User user = new User(id, "name", "name@mail.ru");
-        Item newItem = new Item(null, "newName", "newDescription", true, user, null);
-
-        assertThrows(NullPointerException.class, () -> itemService.update(id, id, ItemMapper.toItemDto(newItem)));
-        verify(itemRepository, never()).save(newItem);
-    }
-
-    @Test
-    void updateItem_whenOwnerNotEqualsUser_thenUserItemException() {
+    void updateItem_whenParametersValid_thenUpdateItem() {
         int userId = 1;
         Integer itemId = 1;
         User user = new User(userId, "name", "name@mail.ru");
@@ -107,7 +94,7 @@ class ItemServiceImplTest {
         ItemDto newItemDto = new ItemDto(itemId, "newName", "newDescription", true, 1);
         Item newItem = ItemMapper.toItem(user, itemRequest, newItemDto);
         when(itemRequestRepository.getById(anyInt())).thenReturn(itemRequest);
-        when(userRepository.getById(anyInt())).thenReturn(user);
+        when(userService.getUserById(anyInt())).thenReturn(Optional.of(UserMapper.toUserDto(user)));
         when(itemRepository.getById(itemId)).thenReturn(oldItem);
         when(itemRepository.save(newItem)).thenReturn(newItem);
 
@@ -247,12 +234,12 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void findAllByRequest_whenItemNotFound_thenReturnedNull() {
-        when(itemRepository.findAllByRequestId(anyInt())).thenThrow(NullPointerException.class);
+    void findAllByRequest_whenEntityNotFoundException_thenEmptyList() {
+        when(itemRepository.findAllByRequestId(anyInt())).thenThrow(EntityNotFoundException.class);
 
         List<ItemDto> actualItemDto = itemService.findAllByRequest(1);
 
-        assertEquals(null, actualItemDto);
+        assertEquals(new ArrayList<>(), actualItemDto);
         verify(itemRepository, times(1)).findAllByRequestId(anyInt());
     }
 

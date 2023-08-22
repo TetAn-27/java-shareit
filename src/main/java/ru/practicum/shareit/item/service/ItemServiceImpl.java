@@ -23,7 +23,6 @@ import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.user.storage.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
@@ -38,17 +37,15 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final ItemRequestRepository itemRequestRepository;
 
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, UserService userService,
+    public ItemServiceImpl(ItemRepository itemRepository, UserService userService,
                            BookingRepository bookingRepository, CommentRepository commentRepository,
                            ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
@@ -66,7 +63,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
         ItemRequest itemRequest = getItemRequest(itemDto.getRequestId());
-        Item item = getUpdateItem(itemId, ItemMapper.toItem(userRepository.getById(userId), itemRequest, itemDto));
+        User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+        Item item = getUpdateItem(itemId, ItemMapper.toItem(user, itemRequest, itemDto));
         if (item.getOwner().getId() != userId) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
@@ -136,6 +134,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Optional<CommentDto> addComment(Integer userId, Integer itemId, CommentDto commentDto) {
+        commentDto.setCreated(LocalDateTime.now());
         Booking booking;
         try {
             booking = bookingRepository.findFirst1ByItemIdAndBookerId(itemId, userId);
@@ -158,10 +157,10 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> findAllByRequest(int requestId) {
         List<Item> items;
         try {
-            items = itemRepository.findAllByRequestId(requestId);
-        } catch (NullPointerException ex) {
+            items =  itemRepository.findAllByRequestId(requestId);
+        } catch (EntityNotFoundException ex) {
             log.info("На данный запрос ответы отсутсвуют");
-            return null;
+            return new ArrayList<>();
         }
         return toListItemDto(items);
     }

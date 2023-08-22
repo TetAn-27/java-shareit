@@ -8,7 +8,6 @@ import ru.practicum.shareit.item.dto.ItemDtoForGet;
 import ru.practicum.shareit.item.service.ItemService;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -61,7 +60,6 @@ public class ItemController {
     public CommentDto addComment(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                  @PathVariable("itemId") Integer itemId,
                                  @Valid @RequestBody CommentDto commentDto) {
-        commentDto.setCreated(LocalDateTime.now());
         return itemService.addComment(userId, itemId, commentDto).get();
     }
 }

@@ -18,6 +18,8 @@ import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.persistence.EntityNotFoundException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public Optional<ItemRequestDto> create(Integer userId, ItemRequestDto itemRequestDto) {
+        itemRequestDto.setCreated(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
         return Optional.of(ItemRequestMapper.toItemRequestDto(itemRequestRepository.save(
                 ItemRequestMapper.toItemRequest(user, itemRequestDto))));
@@ -55,8 +58,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         Pageable page = pageRequestMethod;
         do {
             Page<ItemRequest> pageRequest = itemRequestRepository.findAll(page);
-            pageRequest.getContent().forEach(ItemRequest -> {
-            });
             if (pageRequest.hasNext()) {
                 page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
                 page = null;
@@ -96,7 +97,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private List<ItemRequest> findAllByRequesterId(Integer userId) {
         try {
             return itemRequestRepository.findAllByRequesterId(userId);
-        } catch (Throwable ex) {
+        } catch (EntityNotFoundException ex) {
             log.info("Список запросов пользователя пуст");
             return new ArrayList<>();
         }
