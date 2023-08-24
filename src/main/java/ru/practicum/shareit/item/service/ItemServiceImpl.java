@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
@@ -15,13 +18,15 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.storage.CommentRepository;
 import ru.practicum.shareit.item.storage.ItemRepository;
+import ru.practicum.shareit.request.ItemRequest;
+import ru.practicum.shareit.request.storage.ItemRequestRepository;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.service.UserService;
-import ru.practicum.shareit.user.storage.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,30 +37,34 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
     private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
-    public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, UserService userService,
-                           BookingRepository bookingRepository, CommentRepository commentRepository) {
+    public ItemServiceImpl(ItemRepository itemRepository, UserService userService,
+                           BookingRepository bookingRepository, CommentRepository commentRepository,
+                           ItemRequestRepository itemRequestRepository) {
         this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
         this.userService = userService;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     @Override
     public Optional<ItemDto> create(int userId, ItemDto itemDto) {
         User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+        ItemRequest itemRequest = getItemRequest(itemDto.getRequestId());
         return Optional.of(ItemMapper.toItemDto(itemRepository.save(
-                ItemMapper.toItem(user, itemDto))));
+                ItemMapper.toItem(user, itemRequest, itemDto))));
     }
 
     @Override
     public Optional<ItemDto> update(int userId, Integer itemId, ItemDto itemDto) {
-        Item item = getUpdateItem(itemId, ItemMapper.toItem(userRepository.getById(userId), itemDto));
+        ItemRequest itemRequest = getItemRequest(itemDto.getRequestId());
+        User user = UserMapper.toUser(userId, userService.getUserById(userId).get());
+        Item item = getUpdateItem(itemId, ItemMapper.toItem(user, itemRequest, itemDto));
         if (item.getOwner().getId() != userId) {
             throw new UserItemException("Вы не являетесь владельцем данной вещи");
         }
@@ -72,33 +81,45 @@ public class ItemServiceImpl implements ItemService {
                     item.getOwner().getId() == userId ? getItemLastBooking(itemId) : null;
             return Optional.of(ItemMapper.toItemDtoForGet(item, lastBooking, nextBooking, getListComment(itemId)));
         } catch (EntityNotFoundException ex) {
-            log.error("Предмет с ID {} не был найден", itemId);
-            throw new NotFoundException("Предмет с таким ID не был найден");
+            log.error("Предмет с Id {} не был найден", itemId);
+            throw new NotFoundException("Предмет с таким Id не был найден");
         }
     }
 
     @Override
-    public List<ItemDtoForGet> getAllUserItems(int userId) {
-        List<Item> items = itemRepository.findAllByOwnerId(userId);
-        List<ItemDtoForGet> itemsDto = new ArrayList<>();
-        for (Item item : items) {
-            int itemId = item.getId();
-            ItemDtoForGet itemDto = ItemMapper.toItemDtoForGet(item, getItemLastBooking(itemId),
-                    getItemNextBooking(itemId), getListComment(itemId));
-            itemsDto.add(itemDto);
-        }
-        return itemsDto;
+    public List<ItemDtoForGet> getAllUserItems(int userId, PageRequest pageRequestMethod) {
+        Pageable page = pageRequestMethod;
+        do {
+            Page<Item> pageRequest = itemRepository.findAllByOwnerId(userId, page);
+            pageRequest.getContent().forEach(ItemRequest -> {
+            });
+            if (pageRequest.hasNext()) {
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
+                page = null;
+            }
+        return toListItemDtoForGet(pageRequest.getContent());
+        } while (page != null);
     }
 
     @Override
-    public List<ItemDto> searchForItems(String text) {
+    public List<ItemDto> searchForItems(String text, PageRequest pageRequestMethod) {
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
-        return toListItemDto(itemRepository.findByNameOrDescriptionContainingIgnoreCase(
-                text.toLowerCase(), text.toLowerCase())).stream()
-                .filter(i -> i.getAvailable())
-                .collect(Collectors.toList());
+        Pageable page = pageRequestMethod;
+        do {
+            Page<Item> pageRequest = itemRepository.findByNameOrDescriptionContainingIgnoreCase(page,
+                    text.toLowerCase(), text.toLowerCase());
+            pageRequest.getContent().forEach(ItemRequest -> {
+            });
+            if (pageRequest.hasNext()) {
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
+                page = null;
+            }
+            return toListItemDto(pageRequest.getContent()).stream()
+                    .filter(ItemDto::getAvailable)
+                    .collect(Collectors.toList());
+        } while (page != null);
     }
 
     @Override
@@ -113,6 +134,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Optional<CommentDto> addComment(Integer userId, Integer itemId, CommentDto commentDto) {
+        commentDto.setCreated(LocalDateTime.now());
         Booking booking;
         try {
             booking = bookingRepository.findFirst1ByItemIdAndBookerId(itemId, userId);
@@ -131,10 +153,32 @@ public class ItemServiceImpl implements ItemService {
         return Optional.of(CommentMapper.toCommentDto(commentRepository.save(comment)));
     }
 
+    @Override
+    public List<ItemDto> findAllByRequest(int requestId) {
+        List<Item> items;
+        try {
+            items =  itemRepository.findAllByRequestId(requestId);
+        } catch (EntityNotFoundException ex) {
+            log.info("На данный запрос ответы отсутсвуют");
+            return new ArrayList<>();
+        }
+        return toListItemDto(items);
+    }
+
     private List<ItemDto> toListItemDto(List<Item> itemList) {
         List<ItemDto> itemDtoList = new ArrayList<>();
         for (Item item : itemList) {
             itemDtoList.add(ItemMapper.toItemDto(item));
+        }
+        return itemDtoList;
+    }
+
+    private List<ItemDtoForGet> toListItemDtoForGet(List<Item> itemList) {
+        List<ItemDtoForGet> itemDtoList = new ArrayList<>();
+        for (Item item : itemList) {
+            int itemId = item.getId();
+            itemDtoList.add(ItemMapper.toItemDtoForGet(item, getItemLastBooking(itemId),
+                    getItemNextBooking(itemId), getListComment(itemId)));
         }
         return itemDtoList;
     }
@@ -147,7 +191,7 @@ public class ItemServiceImpl implements ItemService {
             }
             return commentDtoList;
         } catch (NullPointerException ex) {
-            log.error("Комментарии к данной вещи отсутствуют");
+            log.info("Комментарии к данной вещи отсутствуют");
             return null;
         }
     }
@@ -165,7 +209,7 @@ public class ItemServiceImpl implements ItemService {
         try {
             return BookingMapper.toBookingDtoRequest(
                 bookingRepository.findFirst1ByItemIdAndStartLessThanEqualAndStatusOrderByStartDesc(
-                        itemId, LocalDateTime.now(), Status.APPROVED));
+                        itemId, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), Status.APPROVED));
         } catch (NullPointerException ex) {
             log.error("Вещь не забронирована");
             return null;
@@ -176,9 +220,21 @@ public class ItemServiceImpl implements ItemService {
         try {
             return BookingMapper.toBookingDtoRequest(
                     bookingRepository.findFirst1ByItemIdAndStartGreaterThanEqualAndStatusOrderByStartAsc(
-                            itemId, LocalDateTime.now(), Status.APPROVED));
+                            itemId, LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS), Status.APPROVED));
         } catch (NullPointerException ex) {
             log.error("Вещь не забронирована");
+            return null;
+        }
+    }
+
+    private ItemRequest getItemRequest(Integer requestId) {
+        if (requestId == null) {
+            return null;
+        }
+        try {
+            return itemRequestRepository.getById(requestId);
+        } catch (IllegalArgumentException ex) {
+            log.error("На вещь пока нет запросов");
             return null;
         }
     }

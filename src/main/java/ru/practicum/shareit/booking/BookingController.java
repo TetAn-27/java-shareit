@@ -1,15 +1,20 @@
 package ru.practicum.shareit.booking;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 import ru.practicum.shareit.booking.service.BookingService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 @RestController
 @RequestMapping(path = "/bookings")
+@Validated
 public class BookingController {
 
     private final BookingService bookingService;
@@ -38,16 +43,28 @@ public class BookingController {
     }
 
     @GetMapping //GET /bookings?state={state}
+    @Validated
     public List<BookingDtoResponse> getAllBookingByBookerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                                           @RequestParam(value = "state", defaultValue = "ALL", required = false)
-                                                           String state) {
-        return bookingService.getAllBookingByBookerId(userId, state);
+                                                            @RequestParam(value = "state", defaultValue = "ALL",
+                                                                    required = false) String state,
+                                                            @RequestParam(value = "from", defaultValue = "0",
+                                                                    required = false) @Min(0) int page,
+                                                            @RequestParam(value = "size", defaultValue = "10",
+                                                                    required = false) @Min(1) int size) {
+        return bookingService.getAllBookingByBookerId(userId, state,
+                PageRequest.of(page / size, size, Sort.Direction.DESC, "start"));
     }
 
-   @GetMapping("/owner") //GET /bookings/owner?state={state}
+    @GetMapping("/owner") //GET /bookings/owner?state={state}
+    @Validated
     public List<BookingDtoResponse> getAllBookingByOwnerId(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                             @RequestParam(value = "state", defaultValue = "ALL", required = false)
-                                             String state) {
-        return bookingService.getAllBookingByOwnerId(userId, state);
+                                                           @RequestParam(value = "state", defaultValue = "ALL",
+                                                                   required = false) String state,
+                                                           @RequestParam(value = "from", defaultValue = "0",
+                                                                   required = false) @Min(0) int page,
+                                                           @RequestParam(value = "size", defaultValue = "10",
+                                                                   required = false) @Min(1) int size) {
+        return bookingService.getAllBookingByOwnerId(userId, state,
+                PageRequest.of(page / size, size, Sort.Direction.DESC, "start"));
     }
 }

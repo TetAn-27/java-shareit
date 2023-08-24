@@ -1,6 +1,9 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.Status;
@@ -22,7 +25,6 @@ import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static ru.practicum.shareit.booking.dto.BookingMapper.toBookingDto;
 
@@ -83,15 +85,37 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDtoResponse> getAllBookingByBookerId(Integer bookerId, String state) {
+    public List<BookingDtoResponse> getAllBookingByBookerId(Integer bookerId, String state, PageRequest pageRequestMethod) {
         userService.getUserById(bookerId);
-        return toListBookingDto(getListAccordingState(bookingRepository.findAllByBookerId(bookerId), state));
+        Pageable page = pageRequestMethod;
+        do {
+            Page<Booking> pageRequest = bookingRepository.findAllByBookerId(bookerId, page);
+            pageRequest.getContent().forEach(ItemRequest -> {
+            });
+            if (pageRequest.hasNext()) {
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
+            } else {
+                page = null;
+            }
+            return toListBookingDto(getListAccordingState(pageRequest.getContent(), state));
+        } while (page != null);
     }
 
     @Override
-    public List<BookingDtoResponse> getAllBookingByOwnerId(Integer ownerId, String state) {
+    public List<BookingDtoResponse> getAllBookingByOwnerId(Integer ownerId, String state, PageRequest pageRequestMethod) {
         userService.getUserById(ownerId);
-        return toListBookingDto(getListAccordingState(bookingRepository.findAllByItemOwnerId(ownerId), state));
+        Pageable page = pageRequestMethod;
+        do {
+            Page<Booking> pageRequest = bookingRepository.findAllByItemOwnerId(ownerId, page);
+            pageRequest.getContent().forEach(ItemRequest -> {
+            });
+            if (pageRequest.hasNext()) {
+                page = PageRequest.of(pageRequest.getNumber() + 1, pageRequest.getSize(), pageRequest.getSort());
+            } else {
+                page = null;
+            }
+            return toListBookingDto(getListAccordingState(pageRequest.getContent(), state));
+        } while (page != null);
     }
 
     private List<BookingDtoResponse> toListBookingDto(List<Booking> bookingList) {
@@ -103,28 +127,26 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<Booking> getListAccordingState(List<Booking> bookingList, String state) {
-        Stream<Booking> sortedStream = bookingList.stream()
-                .sorted((o1, o2) -> o2.getStart().compareTo(o1.getStart()));
         switch (state) {
             case "ALL":
-                return sortedStream.collect(Collectors.toList());
+                return bookingList;
             case "CURRENT":
-                return checkingStatusForCurrent(sortedStream);
+                return checkingStatusForCurrent(bookingList);
             case "PAST":
-                return checkingStatusForPast(sortedStream);
+                return checkingStatusForPast(bookingList);
             case "FUTURE":
-                return checkingStatusForFuture(sortedStream);
+                return checkingStatusForFuture(bookingList);
             case "WAITING":
-                return checkingStatusForWaiting(sortedStream);
+                return checkingStatusForWaiting(bookingList);
             case "REJECTED":
-                return checkingStatusForRejected(sortedStream);
+                return checkingStatusForRejected(bookingList);
             default:
                 throw new StateException("Был указан неверный параметр фильтрации");
         }
     }
 
-    private List<Booking> checkingStatusForCurrent(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForCurrent(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> !i.getStatus().equals(Status.CANCELED)
                         && (i.getStart().equals(LocalDateTime.now())
                         || i.getStart().isBefore(LocalDateTime.now()))
@@ -133,31 +155,31 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForPast(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForPast(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> i.getStatus().equals(Status.APPROVED)
                         && i.getStart().isBefore(LocalDateTime.now())
                         && i.getEnd().isBefore(LocalDateTime.now()))
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForFuture(Stream<Booking> sortedStream) {
-        return sortedStream
-                .filter(i -> i.getStatus().equals(Status.APPROVED)
-                        || i.getStatus().equals(Status.WAITING)
+    private List<Booking> checkingStatusForFuture(List<Booking> sortedStream) {
+        return sortedStream.stream()
+                .filter(i -> (i.getStatus().equals(Status.APPROVED)
+                        || i.getStatus().equals(Status.WAITING))
                         && i.getStart().isAfter(LocalDateTime.now())
                         && i.getEnd().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForWaiting(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForWaiting(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> i.getStatus().equals(Status.WAITING))
                 .collect(Collectors.toList());
     }
 
-    private List<Booking> checkingStatusForRejected(Stream<Booking> sortedStream) {
-        return sortedStream
+    private List<Booking> checkingStatusForRejected(List<Booking> sortedStream) {
+        return sortedStream.stream()
                 .filter(i -> i.getStatus().equals(Status.REJECTED))
                 .collect(Collectors.toList());
     }

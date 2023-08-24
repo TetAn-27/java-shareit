@@ -1,5 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
+import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.booking.dto.BookingDtoRequest;
 import ru.practicum.shareit.booking.dto.BookingDtoResponse;
 
@@ -14,7 +15,7 @@ public interface BookingService {
 
     Optional<BookingDtoResponse> getBookingById(Integer userId, Integer bookingId);
 
-    List<BookingDtoResponse> getAllBookingByBookerId(Integer userId, String state);
+    List<BookingDtoResponse> getAllBookingByBookerId(Integer userId, String state, PageRequest pageRequest);
 
-    List<BookingDtoResponse> getAllBookingByOwnerId(Integer userId, String state);
+    List<BookingDtoResponse> getAllBookingByOwnerId(Integer userId, String state, PageRequest pageRequest);
 }

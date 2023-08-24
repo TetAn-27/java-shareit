@@ -10,7 +10,6 @@ import ru.practicum.shareit.user.dto.UserMapper;
 import ru.practicum.shareit.user.storage.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +26,7 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> findAll() {
         List<User> allUsers = userRepository.findAll();
         log.debug("Текущее количество пользователей: {}", allUsers.size());
-        return toListUserDto(allUsers);
+        return UserMapper.toListUserDto(allUsers);
     }
 
     @Override
@@ -61,14 +60,6 @@ public class UserServiceImpl implements UserService {
             log.error("User с ID {} не был найден", userId);
             throw new NotFoundException("User с таким ID не был найден");
         }
-    }
-
-    private List<UserDto> toListUserDto(List<User> userList) {
-        List<UserDto> userDtoList = new ArrayList<>();
-        for (User user : userList) {
-            userDtoList.add(UserMapper.toUserDto(user));
-        }
-        return userDtoList;
     }
 
     private User getUpdateUser(Integer userId, User userUpdate) {

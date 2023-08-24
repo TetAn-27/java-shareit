@@ -33,5 +33,6 @@ public class Booking {
     @ToString.Exclude
     private User booker;
     @Enumerated
+    @Column(name = "status")
     private Status status;
 }
