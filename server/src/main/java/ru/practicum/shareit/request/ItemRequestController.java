@@ -6,7 +6,6 @@ import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestDtoForGet;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -20,7 +19,7 @@ public class ItemRequestController {
 
     @PostMapping()
     public ItemRequestDto create(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                 @Valid @RequestBody ItemRequestDto itemRequestDto) {
+                                 @RequestBody ItemRequestDto itemRequestDto) {
         return itemRequestService.create(userId, itemRequestDto).get();
     }
 
@@ -31,16 +30,16 @@ public class ItemRequestController {
 
     @GetMapping("/all") //GET /requests/all?from={from}&size={size}
     public List<ItemRequestDtoForGet> getAllRequests(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                               @RequestParam(value = "from", defaultValue = "0", required = false)
-                                                    Integer page,
-                                               @RequestParam(value = "size", defaultValue = "10", required = false)
-                                                   Integer size) {
+                                                     @RequestParam(value = "from", defaultValue = "0", required = false)
+                                                     Integer page,
+                                                     @RequestParam(value = "size", defaultValue = "10", required = false)
+                                                         Integer size) {
         return itemRequestService.getAllRequests(userId, PageRequest.of(page, size));
     }
 
     @GetMapping("/{requestId}") //GET /requests/{requestId}
     public ItemRequestDtoForGet getById(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                  @PathVariable("requestId") Integer id) {
+                                        @PathVariable("requestId") Integer id) {
         return itemRequestService.getById(userId, id).get();
     }
 }

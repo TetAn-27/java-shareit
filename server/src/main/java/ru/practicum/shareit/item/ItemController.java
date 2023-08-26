@@ -7,7 +7,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoForGet;
 import ru.practicum.shareit.item.service.ItemService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -21,14 +20,14 @@ public class ItemController {
 
     @PostMapping()
     public ItemDto createItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                     @Valid @RequestBody ItemDto itemDto) {
+                              @RequestBody ItemDto itemDto) {
         return itemService.create(userId, itemDto).get();
     }
 
     @PatchMapping("/{itemId}")
     public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
-                                     @PathVariable("itemId") Integer itemId,
-                                     @RequestBody ItemDto itemDto) {
+                              @PathVariable("itemId") Integer itemId,
+                              @RequestBody ItemDto itemDto) {
        return itemService.update(userId, itemId, itemDto).get();
     }
 
@@ -59,7 +58,7 @@ public class ItemController {
     @PostMapping("/{itemId}/comment") //POST /items/{itemId}/comment
     public CommentDto addComment(@RequestHeader("X-Sharer-User-Id") Integer userId,
                                  @PathVariable("itemId") Integer itemId,
-                                 @Valid @RequestBody CommentDto commentDto) {
+                                 @RequestBody CommentDto commentDto) {
         return itemService.addComment(userId, itemId, commentDto).get();
     }
 }
