@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     depends_on:
     environment:
+      - TZ=Asia/Krasnoyarsk
       - SHAREIT_SERVER_URL=http://server:9090
 
   server:
@@ -18,6 +19,7 @@ services:
       - "9090:9090"
     depends_on:
     environment:
+      - TZ=Asia/Krasnoyarsk
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
 
   db:
@@ -26,3 +28,7 @@ services:
     ports:
       - "6541:5432"
     environment:
+      - POSTGRES_DB=shareit
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - TZ=Asia/Krasnoyarsk
