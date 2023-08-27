@@ -7,7 +7,6 @@ services:
     depends_on:
       - server
     environment:
-      - TZ=Asia/Krasnoyarsk
       - SHAREIT_SERVER_URL=http://server:9090
 
   server:
@@ -17,7 +16,6 @@ services:
     depends_on:
       - db
     environment:
-      - TZ=Asia/Krasnoyarsk
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareit
       - SPRING_DATASOURCE_USERNAME=user
       - SPRING_DATASOURCE_PASSWORD=password
@@ -32,4 +30,3 @@ services:
       - POSTGRES_DB=shareit
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
-      - TZ=Asia/Krasnoyarsk
