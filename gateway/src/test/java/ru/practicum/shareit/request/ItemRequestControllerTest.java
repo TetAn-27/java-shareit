@@ -1,6 +1,5 @@
 package ru.practicum.shareit.request;
 
-/*
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,18 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.dto.ItemRequestDtoForGet;
-import ru.practicum.shareit.request.service.ItemRequestService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,13 +28,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ItemRequestControllerTest {
 
     @Mock
-    private ItemRequestService itemRequestService;
+    private ItemRequestClient itemRequestClient;
     @InjectMocks
     ItemRequestController controller;
     private final ObjectMapper mapper = new ObjectMapper();
     private MockMvc mvc;
     private ItemRequestDto itemRequestDto;
-    private ItemRequestDtoForGet itemRequestDtoForGet;
 
     @BeforeEach
     void setUp() {
@@ -52,18 +45,12 @@ class ItemRequestControllerTest {
                 1,
                 "description",
                 LocalDateTime.now());
-
-        itemRequestDtoForGet = new ItemRequestDtoForGet(
-                1,
-                "description",
-                LocalDateTime.now(),
-                new ArrayList<>());
     }
 
     @Test
     void create_whenParametersValid_thenReturnedItemRequest() throws Exception {
-        when(itemRequestService.create(anyInt(), any()))
-                .thenReturn(Optional.of(itemRequestDto));
+        when(itemRequestClient.createItemRequest(anyInt(), any()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
         String result = mvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(itemRequestDto))
@@ -76,13 +63,13 @@ class ItemRequestControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(itemRequestDto), result);
+        verify(itemRequestClient).createItemRequest(anyInt(), any());
     }
 
     @Test
     void findAll_whenParametersValid_thenReturnedItemRequest() throws Exception {
-        when(itemRequestService.findAll(anyInt()))
-                .thenReturn(List.of(itemRequestDtoForGet));
+        when(itemRequestClient.getAll(anyInt()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
         String result = mvc.perform(get("/requests")
                 .header("X-Sharer-User-Id", 1))
@@ -91,14 +78,13 @@ class ItemRequestControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(List.of(itemRequestDtoForGet)), result);
-        verify(itemRequestService).findAll(anyInt());
+        verify(itemRequestClient).getAll(anyInt());
     }
 
     @Test
     void getAllRequests_whenParametersValid_thenReturnedItemRequestList() throws Exception {
-        when(itemRequestService.getAllRequests(1, PageRequest.of(0, 10)))
-                .thenReturn(List.of(itemRequestDtoForGet));
+        when(itemRequestClient.getAllItemRequest(1, 0, 10))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
         String result = mvc.perform(get("/requests/all")
                         .header("X-Sharer-User-Id", 1))
@@ -107,14 +93,13 @@ class ItemRequestControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(List.of(itemRequestDtoForGet)), result);
-        verify(itemRequestService).getAllRequests(1, PageRequest.of(0, 10));
+        verify(itemRequestClient).getAllItemRequest(1,0, 10);
     }
 
     @Test
     void getById_whenParametersValid_thenReturnedItemRequest() throws Exception {
-        when(itemRequestService.getById(anyInt(), anyInt()))
-                .thenReturn(Optional.of(itemRequestDtoForGet));
+        when(itemRequestClient.getItemRequest(anyInt(), anyInt()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
         String result = mvc.perform(get("/requests/1")
                         .header("X-Sharer-User-Id", 1))
@@ -123,7 +108,6 @@ class ItemRequestControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(itemRequestDtoForGet), result);
-        verify(itemRequestService).getById(anyInt(), anyInt());
+        verify(itemRequestClient).getItemRequest(anyInt(), anyInt());
     }
-}*/
+}

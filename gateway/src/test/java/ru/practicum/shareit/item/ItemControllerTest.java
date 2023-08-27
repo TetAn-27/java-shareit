@@ -1,4 +1,3 @@
-/*
 package ru.practicum.shareit.item;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,21 +8,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ru.practicum.shareit.booking.Status;
-import ru.practicum.shareit.booking.dto.BookingDtoRequest;
+import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoForGet;
-import ru.practicum.shareit.item.service.ItemService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,13 +31,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ItemControllerTest {
 
     @Mock
-    private ItemService itemService;
+    private ItemClient itemClient;
     @InjectMocks
     ItemController controller;
     private final ObjectMapper mapper = new ObjectMapper();
     private MockMvc mvc;
     private ItemDto itemDto;
-    private ItemDtoForGet itemDtoForGet;
     private CommentDto commentDto;
 
     @BeforeEach
@@ -58,29 +51,6 @@ class ItemControllerTest {
                 "description",
                 true,
                 1);
-        itemDtoForGet = new ItemDtoForGet(
-                1,
-                "name",
-                "description",
-                true,
-                1,
-                new BookingDtoRequest(
-                        1,
-                        LocalDateTime.now(),
-                        LocalDateTime.now().plusMinutes(20),
-                        1,
-                        1,
-                        Status.WAITING
-                ),
-                new BookingDtoRequest(
-                        1,
-                        LocalDateTime.now().plusMinutes(50),
-                        LocalDateTime.now().plusMinutes(70),
-                        2,
-                        1,
-                        Status.WAITING
-                ),
-                new ArrayList<>());
         commentDto = new CommentDto(
                 1,
                 "text",
@@ -94,8 +64,8 @@ class ItemControllerTest {
 
     @Test
     void createItem_whenParametersValid_thenReturnedItem() throws Exception {
-        when(itemService.create(anyInt(), any()))
-                .thenReturn(Optional.of(itemDto));
+        when(itemClient.itemCreate(anyInt(), any()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
         String result = mvc.perform(post("/items")
                         .content(mapper.writeValueAsString(itemDto))
@@ -108,14 +78,14 @@ class ItemControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(itemDto), result);
+        verify(itemClient).itemCreate(anyInt(), any());
     }
 
     @Test
     void updateItem_whenParametersValid_thenReturnedItem() throws Exception {
         int id = 1;
-        when(itemService.update(anyInt(), anyInt(), any()))
-                .thenReturn(Optional.of(itemDto));
+        when(itemClient.itemUpdate(anyInt(), anyInt(), any()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
         String result = mvc.perform(patch("/items/{itemId}", id)
                         .content(mapper.writeValueAsString(itemDto))
@@ -128,15 +98,14 @@ class ItemControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(itemDto), result);
-        verify(itemService).update(anyInt(), anyInt(), any());
+        verify(itemClient).itemUpdate(anyInt(), anyInt(), any());
     }
 
     @Test
     void getItemById_whenParametersValid_thenReturnedItem() throws Exception {
         int id = 1;
-        when(itemService.getItemById(anyInt(), anyInt()))
-                .thenReturn(Optional.of(itemDtoForGet));
+        when(itemClient.getItem(anyInt(), anyInt()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
         String result = mvc.perform(get("/items/{itemId}", id)
                         .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
@@ -144,15 +113,14 @@ class ItemControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(itemDtoForGet), result);
-        verify(itemService).getItemById(id, id);
+        verify(itemClient).getItem(id, id);
     }
 
     @Test
     void getAllUserItems_whenParametersValid_thenReturnedItemList() throws Exception {
         int id = 1;
-        when(itemService.getAllUserItems(id, PageRequest.of(0, 10)))
-                .thenReturn(List.of(itemDtoForGet));
+        when(itemClient.getAllUserItems(id, 0, 10))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
         String result = mvc.perform(get("/items")
                         .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
@@ -160,29 +128,25 @@ class ItemControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(List.of(itemDtoForGet)), result);
-        verify(itemService).getAllUserItems(id, PageRequest.of(0, 10));
+        verify(itemClient).getAllUserItems(id, 0, 10);
     }
 
     @Test
-    void searchForItems__whenParametersValid_thenReturnedItem() throws Exception {
-        when(itemService.searchForItems("text", PageRequest.of(0, 10)))
-                .thenReturn(List.of(itemDto));
-        String result = mvc.perform(get("/items/search?text=text"))
-                .andExpect(status().isOk())
+    void searchForItems_whenTextNull_thenBadRequest() throws Exception {
+        String result = mvc.perform(get("/items/search"))
+                .andExpect(status().isBadRequest())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(List.of(itemDto)), result);
-        verify(itemService).searchForItems("text", PageRequest.of(0, 10));
+        verify(itemClient, never()).searchForItems(1, "text", 0, 10);
     }
 
     @Test
     void addComment_whenParametersValid_thenReturnedComment() throws Exception {
         int id = 1;
-        when(itemService.addComment(anyInt(), anyInt(), any()))
-                .thenReturn(Optional.of(commentDto));
+        when(itemClient.addComment(anyInt(), anyInt(), any()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
         String result = mvc.perform(post("/items/{itemId}/comment", id)
                         .content(mapper.writeValueAsString(commentDto))
@@ -195,6 +159,6 @@ class ItemControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        assertEquals(mapper.writeValueAsString(commentDto), result);
-    }}
-*/
+        verify(itemClient).addComment(anyInt(), anyInt(), any());
+    }
+}

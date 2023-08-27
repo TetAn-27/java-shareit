@@ -1,6 +1,5 @@
 package ru.practicum.shareit.user;
 
-/*
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,29 +8,25 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.service.UserService;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Optional;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
 
     @Mock
-    private UserService userService;
+    private UserClient userClient;
     @InjectMocks
     private UserController controller;
     private final ObjectMapper mapper = new ObjectMapper();
@@ -52,77 +47,70 @@ class UserControllerTest {
 
     @Test
     void getUserById_whenUserFound_thenReturnedUser() throws Exception {
-        when(userService.getUserById(eq(userDto.getId())))
-                .thenReturn(Optional.of(userDto));
-
-        mvc.perform(get("/users/1"))
+        int id = 1;
+        when(userClient.getUser(anyInt()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
+        String result = mvc.perform(get("/users/{userId}", id)
+                        .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDto.getId()), Integer.class))
-                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class))
-                .andExpect(jsonPath("$.email", is(userDto.getEmail()), String.class));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        verify(userClient).getUser(id);
     }
 
     @Test
     void findAll_whenParametersValid_thenReturnedUser() throws Exception {
-        when(userService.findAll())
-                .thenReturn(List.of(userDto));
-
-        mvc.perform(get("/users"))
+        int id = 1;
+        when(userClient.getAllUsers())
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
+        String result = mvc.perform(get("/users")
+                        .header("X-Sharer-User-Id", 1))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(userDto.getId()), Integer.class))
-                .andExpect(jsonPath("$[0].name", is(userDto.getName()), String.class))
-                .andExpect(jsonPath("$[0].email", is(userDto.getEmail()), String.class));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        verify(userClient).getAllUsers();
     }
 
     @Test
     void create_whenParametersValid_thenReturnedUser() throws Exception {
-        when(userService.create(any()))
-                .thenReturn(Optional.of(userDto));
+        when(userClient.userCreate(any()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
-        mvc.perform(post("/users")
+        String result = mvc.perform(post("/users")
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDto.getId()), Integer.class))
-                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class))
-                .andExpect(jsonPath("$.email", is(userDto.getEmail()), String.class));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        verify(userClient).userCreate(any());
     }
 
     @Test
     void update_whenUserFound_thenReturnedUser() throws Exception {
-        userService.create(userDto);
-        userDto.setName("nameUpdate");
-        userDto.setEmail("nameUpdate@mail.com");
-        when(userService.update(eq(userDto.getId()), any()))
-                .thenReturn(Optional.of(userDto));
+        int id = 1;
+        when(userClient.userUpdate(anyInt(), any()))
+                .thenReturn(ResponseEntity.of(Optional.of(Object.class)));
 
-        mvc.perform(patch("/users/1")
+        String result = mvc.perform(patch("/users/{usersId}", id)
                         .content(mapper.writeValueAsString(userDto))
                         .characterEncoding(StandardCharsets.UTF_8)
+                        .header("X-Sharer-User-Id", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(userDto.getId()), Integer.class))
-                .andExpect(jsonPath("$.name", is(userDto.getName()), String.class))
-                .andExpect(jsonPath("$.email", is(userDto.getEmail()), String.class));
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        verify(userClient).userUpdate(anyInt(),  any());
     }
-
-    @Test
-    void deleteUser_whenUserFound_thenDeletedUser() throws Exception {
-        userService.create(userDto);
-        userService.deleteUser(eq(userDto.getId()));
-
-        mvc.perform(delete("/users/1")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        mvc.perform(get("/users"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-    }
-}*/
+}
