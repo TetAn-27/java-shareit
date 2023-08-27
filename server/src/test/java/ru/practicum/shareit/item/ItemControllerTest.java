@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import static org.mockito.Mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -150,7 +151,7 @@ class ItemControllerTest {
     @Test
     void getAllUserItems_whenParametersValid_thenReturnedItemList() throws Exception {
         int id = 1;
-        when(itemService.getAllUserItems(id, PageRequest.of(0, 10)))
+        when(itemService.getAllUserItems(id, PageRequest.of(0, 10, Sort.Direction.ASC, "id")))
                 .thenReturn(List.of(itemDtoForGet));
         String result = mvc.perform(get("/items")
                         .header("X-Sharer-User-Id", 1))
@@ -160,12 +161,12 @@ class ItemControllerTest {
                 .getContentAsString();
 
         assertEquals(mapper.writeValueAsString(List.of(itemDtoForGet)), result);
-        verify(itemService).getAllUserItems(id, PageRequest.of(0, 10));
+        verify(itemService).getAllUserItems(id, PageRequest.of(0, 10, Sort.Direction.ASC, "id"));
     }
 
     @Test
     void searchForItems__whenParametersValid_thenReturnedItem() throws Exception {
-        when(itemService.searchForItems("text", PageRequest.of(0, 10)))
+        when(itemService.searchForItems("text", PageRequest.of(0, 10, Sort.Direction.ASC, "id")))
                 .thenReturn(List.of(itemDto));
         String result = mvc.perform(get("/items/search?text=text"))
                 .andExpect(status().isOk())
@@ -174,7 +175,7 @@ class ItemControllerTest {
                 .getContentAsString();
 
         assertEquals(mapper.writeValueAsString(List.of(itemDto)), result);
-        verify(itemService).searchForItems("text", PageRequest.of(0, 10));
+        verify(itemService).searchForItems("text", PageRequest.of(0, 10, Sort.Direction.ASC, "id"));
     }
 
     @Test
