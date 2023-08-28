@@ -31,12 +31,12 @@ public class UserClient extends BaseClient {
         return get("");
     }
 
-    public ResponseEntity<Object> userCreate(UserDto userDto) {
-        return post("", userDto);
+    public ResponseEntity<Object> userCreate(UserDto body) {
+        return post("", body);
     }
 
-    public ResponseEntity<Object> userUpdate(int userId, UserDto userDto) {
-        return patch("/" + userId, userDto);
+    public ResponseEntity<Object> userUpdate(int userId, UserDto body) {
+        return patch("/" + userId, body);
     }
 
     public ResponseEntity<Object> userDelete(int userId) {

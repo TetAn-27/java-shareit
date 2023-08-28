@@ -46,8 +46,8 @@ public class BookingClient extends BaseClient {
     }
 
 
-    public ResponseEntity<Object> bookItem(int userId, BookItemRequestDto requestDto) {
-        return post("", userId, requestDto);
+    public ResponseEntity<Object> bookItem(int userId, BookItemRequestDto body) {
+        return post("", userId, body);
     }
 
     public ResponseEntity<Object> bookItemUpdate(int userId, Integer bookingId, Boolean approved) {
